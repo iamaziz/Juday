@@ -314,9 +314,7 @@ export default function DailyJournal() {
           <>
             {currentDaySheet ? (
               <div className="w-full max-w-[1200px] mb-8">
-                <h2 className="text-2xl font-semibold mb-4">
-                  {isSameDay(selectedDate || new Date(), new Date()) ? "Today's Sheet" : format(selectedDate || new Date(), "EEEE, MMMM d, yyyy")}
-                </h2>
+                {/* Removed the h2 title for "Today's Sheet" */}
                 <DailySheetEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
