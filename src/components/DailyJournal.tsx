@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import DailySheetEditor from "./DailySheetEditor";
 import { format } from "date-fns";
+import DateTimeDisplay from "./DateTimeDisplay"; // Import the new component
 
 interface SheetItem {
   id: string;
@@ -176,8 +177,11 @@ export default function DailyJournal() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center justify-between px-4 py-2 bg-background">
-        <h1 className="text-4xl font-semibold">Today</h1>
+      <header className="flex items-center justify-between px-4 py-4 bg-background">
+        <h1 className="text-4xl font-semibold relative inline-flex items-baseline">
+          Today
+          <DateTimeDisplay />
+        </h1>
         {user ? (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
