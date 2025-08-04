@@ -16,7 +16,8 @@ import { useInView } from "react-intersection-observer";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import HistoricalSheetItem from "./HistoricalSheetItem"; // Import the new component
+import HistoricalSheetItem from "./HistoricalSheetItem";
+import { useUserActivity } from "@/hooks/use-user-activity"; // Import the new hook
 
 interface SheetItem {
   id: string;
@@ -36,7 +37,8 @@ export default function DailyJournal() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
-  const [isEditorActive, setIsEditorActive] = useState(false); // New state for editor focus
+  
+  const isUserActive = useUserActivity(); // Use the new hook
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -254,7 +256,7 @@ export default function DailyJournal() {
     <div className="flex flex-col h-screen">
       <header className={cn(
         "flex items-center justify-between px-4 py-4 bg-background transition-opacity duration-300",
-        isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+        !isUserActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when idle
       )}>
         <h1 className="text-4xl font-semibold relative inline-flex items-baseline">
           Today
@@ -309,16 +311,16 @@ export default function DailyJournal() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4"> {/* Removed overflow-y-auto */}
+      <main className="flex-1 flex flex-col items-center p-4">
         {user ? (
           <>
             {currentDaySheet ? (
-              <div className="w-full max-w-[1200px] flex-1"> {/* Added flex-1, removed mb-8 */}
+              <div className="w-full max-w-[1200px] flex-1">
                 <DailySheetEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
                   onContentChange={handleContentSave}
-                  onFocusChange={setIsEditorActive} // Pass the focus change handler
+                  // Removed onFocusChange prop
                 />
               </div>
             ) : (
@@ -327,8 +329,8 @@ export default function DailyJournal() {
 
             {loadedHistoricalSheets.length > 0 && (
               <div className={cn(
-                "w-full max-w-[1200px] space-y-8 mt-8 transition-opacity duration-300", // Added mt-8
-                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+                "w-full max-w-[1200px] space-y-8 mt-8 transition-opacity duration-300",
+                !isUserActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when idle
               )}>
                 {loadedHistoricalSheets.map((sheet) => (
                   <HistoricalSheetItem key={sheet.id} sheet={sheet} />
@@ -339,7 +341,7 @@ export default function DailyJournal() {
             {hasMoreSheets && user && (
               <div ref={ref} className={cn(
                 "flex justify-center py-8 transition-opacity duration-300",
-                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+                !isUserActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when idle
               )}>
                 {loading ? (
                   <p className="text-muted-foreground">Loading more sheets...</p>
@@ -360,7 +362,7 @@ export default function DailyJournal() {
             {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
               <p className={cn(
                 "text-muted-foreground py-8 transition-opacity duration-300",
-                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+                !isUserActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when idle
               )}>No more historical sheets.</p>
             )}
           </>

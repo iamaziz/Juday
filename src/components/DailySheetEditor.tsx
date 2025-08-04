@@ -12,10 +12,9 @@ interface DailySheetEditorProps {
   sheetId: string;
   initialContent: string;
   onContentChange: (content: string) => void;
-  onFocusChange?: (isFocused: boolean) => void;
 }
 
-export default function DailySheetEditor({ sheetId, initialContent, onContentChange, onFocusChange }: DailySheetEditorProps) {
+export default function DailySheetEditor({ sheetId, initialContent, onContentChange }: DailySheetEditorProps) {
   const supabase = createClient();
   const [content, setContent] = useState(initialContent);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -47,14 +46,6 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
     debounceTimeoutRef.current = setTimeout(() => {
       onContentChange(newContent);
     }, 1000);
-  };
-
-  const handleFocus = () => {
-    onFocusChange?.(true);
-  };
-
-  const handleBlur = () => {
-    onFocusChange?.(false);
   };
 
   // Realtime subscription for content synchronization
@@ -103,7 +94,7 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
     <div className="w-full max-w-[1200px] flex flex-col flex-grow">
       {/* ResizablePanelGroup should also grow */}
       <ResizablePanelGroup direction="horizontal" className="flex-grow rounded-lg">
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize={50} minSize={30} className="h-full">
           {/* This div should fill its panel and be a flex container for the textarea */}
           <div className="p-4 h-full flex flex-col">
             <Textarea
@@ -111,15 +102,13 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
               placeholder="Start writing your daily tasks and notes here in Markdown..."
               value={content}
               onChange={handleInputChange}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              // Textarea itself should grow to fill available space
-              className="w-full resize-none border-none focus-visible:ring-0 font-mono text-base flex-grow"
+              className="w-full resize-none border-none focus-visible:ring-0 font-mono text-base flex-grow overflow-y-hidden"
+              style={{ height: 'auto' }}
             />
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel defaultSize={50} minSize={30} className="h-full">
           {/* This div should fill its panel and allow its content to scroll if needed */}
           <div className="p-4 prose dark:prose-invert max-w-none h-full overflow-y-auto">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
