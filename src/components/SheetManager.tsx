@@ -29,55 +29,75 @@ export default function SheetManager() {
   const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const fetchSheets = useCallback(async () => {
-    if (!user) {
-      setSheets([]);
-      setSelectedSheetId(null);
-      return;
-    }
-    setLoading(true);
+  // Helper function to fetch sheets data, not a useCallback
+  const fetchSheetsData = async (userId: string) => {
     const { data, error } = await supabase
       .from("sheets")
       .select("id, title, content, created_at, updated_at")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .order("updated_at", { ascending: false });
 
     if (error) {
       toast.error(`Failed to load sheets: ${error.message}`);
-      setSheets([]);
+      return [];
+    }
+    return data || [];
+  };
+
+  // This function will be called to refresh the sheet list and manage selection
+  // It takes the currently selected sheet ID as an argument to avoid dependency issues
+  const handleRefreshSheets = useCallback(async (currentUserId: string, prevSelectedSheetId: string | null) => {
+    setLoading(true);
+    const fetchedSheets = await fetchSheetsData(currentUserId);
+    setSheets(fetchedSheets);
+
+    // Logic to set selectedSheetId after sheets are fetched
+    if (prevSelectedSheetId && fetchedSheets.some(sheet => sheet.id === prevSelectedSheetId)) {
+      setSelectedSheetId(prevSelectedSheetId); // Keep current selection if it still exists
+    } else if (fetchedSheets.length > 0) {
+      setSelectedSheetId(fetchedSheets[0].id); // Select the first sheet
     } else {
-      setSheets(data || []);
-      if (selectedSheetId && !data?.some(sheet => sheet.id === selectedSheetId)) {
-        setSelectedSheetId(null);
-      }
+      setSelectedSheetId(null); // No sheets available
     }
     setLoading(false);
-  }, [user, supabase, selectedSheetId]);
+  }, [supabase]); // Only depends on supabase, which is stable.
 
+  // Effect to load sheets when user changes or on initial mount
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-      if (user) {
-        fetchSheets();
-      }
-    };
+    const initializeUserAndSheets = async () => {
+      setLoading(true);
+      const { data: { user: initialUser } } = await supabase.auth.getUser();
+      setUser(initialUser);
 
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchSheets();
+      if (initialUser) {
+        // Pass the current value of selectedSheetId from the state closure
+        await handleRefreshSheets(initialUser.id, selectedSheetId);
       } else {
         setSheets([]);
         setSelectedSheetId(null);
+        setLoading(false);
+      }
+    };
+
+    initializeUserAndSheets();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Only update user and trigger sheet load if the user object actually changes
+      if (session?.user?.id !== user?.id) {
+        setUser(session?.user || null);
+        if (session?.user) {
+          // Pass the current value of selectedSheetId from the state closure
+          handleRefreshSheets(session.user.id, selectedSheetId);
+        } else {
+          setSheets([]);
+          setSelectedSheetId(null);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, fetchSheets]);
+  }, [supabase, handleRefreshSheets, user]); // Removed selectedSheetId from dependencies here to prevent re-fetch loops.
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -104,7 +124,7 @@ export default function SheetManager() {
     } else {
       toast.success("Signed out successfully!");
       setSheets([]);
-      setSelectedSheetId(null);
+      setSelectedSheetId(null); // Clear selected sheet on sign out
     }
     setLoading(false);
   };
@@ -125,8 +145,8 @@ export default function SheetManager() {
       toast.error(`Failed to create sheet: ${error.message}`);
     } else {
       toast.success("New sheet created!");
-      await fetchSheets();
-      setSelectedSheetId(data.id);
+      // After creating, refresh sheets and select the new one
+      await handleRefreshSheets(user.id, data.id); // Pass the new sheet's ID to select it
       if (isMobile) setIsSheetOpen(false);
     }
     setLoading(false);
@@ -229,7 +249,7 @@ export default function SheetManager() {
               sheetId={selectedSheet.id}
               initialTitle={selectedSheet.title}
               initialContent={selectedSheet.content}
-              onSaveSuccess={fetchSheets}
+              onSaveSuccess={() => handleRefreshSheets(user.id, selectedSheet.id)} // Pass current user and selected ID
             />
           ) : (
             <p className="text-muted-foreground">Select a sheet or create a new one to start editing.</p>

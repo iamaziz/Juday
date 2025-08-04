@@ -12,22 +12,29 @@ export default function AuthCallbackPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (code) {
-      const handleAuthCallback = async () => {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!error) {
-          router.replace("/"); // Redirect to home page on successful sign-in
+    const handleAuthCallback = async () => {
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+        // After attempting to exchange the code, check if a user session exists
+        const { data: { user }, error: getUserError } = await supabase.auth.getUser();
+
+        if (user) {
+          // User is successfully signed in (or was already signed in)
           toast.success("Successfully signed in!");
+          router.replace("/");
         } else {
-          toast.error(`Authentication error: ${error.message}`);
-          router.replace("/?error=auth_failed"); // Redirect with an error query param
+          // No user session after exchange attempt
+          const errorMessage = exchangeError?.message || getUserError?.message || "Authentication failed.";
+          toast.error(`Authentication error: ${errorMessage}`);
+          router.replace("/?error=auth_failed");
         }
-      };
-      handleAuthCallback();
-    } else {
-      // If no code is present, it might be an invalid callback or direct access
-      router.replace("/");
-    }
+      } else {
+        // If no code is present, it might be an invalid callback or direct access
+        router.replace("/");
+      }
+    };
+    handleAuthCallback();
   }, [code, router, supabase]);
 
   return (
