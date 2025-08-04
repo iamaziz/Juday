@@ -244,7 +244,7 @@
 }
 
 .ProseMirror li > p:first-of-type {
-  @apply my-0;
+  @apply my-0 inline;
 }
 
 .ProseMirror:focus {

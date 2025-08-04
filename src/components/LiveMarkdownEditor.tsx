@@ -30,6 +30,7 @@ export default function LiveMarkdownEditor({
         heading: {
           levels: [1, 2, 3],
         },
+        link: false, // Disable StarterKit's default link to avoid conflicts
       }),
       Markdown,
       Placeholder.configure({
