@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } => "@/components/ui/scroll-area";
 import HistoricalSheetItem from "./HistoricalSheetItem"; // Import the new component
 
 interface SheetItem {
@@ -314,7 +314,6 @@ export default function DailyJournal() {
           <>
             {currentDaySheet ? (
               <div className="w-full max-w-[1200px] mb-8">
-                {/* Removed the h2 title for "Today's Sheet" */}
                 <DailySheetEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
@@ -331,7 +330,7 @@ export default function DailyJournal() {
                 "w-full max-w-[1200px] space-y-8 transition-opacity duration-300",
                 isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
               )}>
-                <h2 className="text-2xl font-semibold mt-8 mb-4">Previous Days</h2>
+                {/* Removed the h2 title for "Previous Days" */}
                 {loadedHistoricalSheets.map((sheet) => (
                   <HistoricalSheetItem key={sheet.id} sheet={sheet} />
                 ))}
