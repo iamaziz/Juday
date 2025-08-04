@@ -54,8 +54,26 @@ export default function DailyJournal() {
         .single();
 
       if (createError) {
-        toast.error(`Failed to create daily sheet: ${createError.message}`);
-        setDailySheet(null);
+        // If creation fails due to unique constraint (e.g., another tab created it), try fetching again
+        if (createError.code === '23505') { // PostgreSQL unique violation error code
+          const { data: reFetchedSheet, error: reFetchError } = await supabase
+            .from("sheets")
+            .select("id, title, content, created_at, updated_at")
+            .eq("user_id", userId)
+            .eq("title", today)
+            .single();
+
+          if (reFetchError) {
+            toast.error(`Failed to retrieve daily sheet after concurrent creation: ${reFetchError.message}`);
+            setDailySheet(null);
+          } else {
+            setDailySheet(reFetchedSheet);
+            toast.success(`Daily sheet retrieved after concurrent creation!`);
+          }
+        } else {
+          toast.error(`Failed to create daily sheet: ${createError.message}`);
+          setDailySheet(null);
+        }
       } else {
         toast.success(`New daily sheet created for ${today}!`);
         setDailySheet(newSheet);
@@ -186,6 +204,7 @@ export default function DailyJournal() {
         {user ? (
           dailySheet ? (
             <DailySheetEditor
+              sheetId={dailySheet.id} // Pass the sheet ID for realtime updates
               initialContent={dailySheet.content}
               onContentChange={handleContentSave}
             />
