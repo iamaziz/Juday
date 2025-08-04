@@ -2,11 +2,13 @@
 
 import React, { useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import type { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import Placeholder from "@tiptap/extension-placeholder";
 import { createClient } from "@/lib/supabase/client";
+
+// Deriving the Editor type from the useEditor hook's return type
+type EditorInstance = NonNullable<ReturnType<typeof useEditor>>;
 
 interface LiveMarkdownEditorProps {
   sheetId: string;
@@ -47,7 +49,7 @@ export default function LiveMarkdownEditor({
         class: "ProseMirror",
       },
     },
-    onUpdate: ({ editor }: { editor: Editor }) => {
+    onUpdate: ({ editor }: { editor: EditorInstance }) => {
       const markdown = editor.storage.markdown.getMarkdown();
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
