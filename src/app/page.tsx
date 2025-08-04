@@ -1,3 +1,5 @@
+"use client";
+
 import DailyJournal from "@/components/DailyJournal";
 import { Toaster } from "@/components/ui/sonner";
 
