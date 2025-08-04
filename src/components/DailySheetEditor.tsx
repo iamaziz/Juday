@@ -6,7 +6,6 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { createClient } from "@/lib/supabase/client"; // Import Supabase client
 
 interface DailySheetEditorProps {
@@ -87,27 +86,28 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
   }, []);
 
   return (
-    <div className="w-full h-full max-w-[1200px] flex flex-col">
-      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg overflow-hidden">
+    <div className="w-full max-w-[1200px] flex flex-col">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg"> {/* Removed overflow-hidden */}
         <ResizablePanel defaultSize={50} minSize={30}>
-          <div className="h-full p-4">
+          <div className="p-4"> {/* Removed h-full */}
             <Textarea
               placeholder="Start writing your daily tasks and notes here in Markdown..."
               value={content}
               onChange={handleInputChange}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              className="flex-1 resize-none border-none focus-visible:ring-0 h-full font-mono text-base"
+              className="w-full resize-none border-none focus-visible:ring-0 font-mono text-base min-h-[300px] overflow-y-hidden" // Added min-h and overflow-y-hidden
+              style={{ height: 'auto' }} // Allow height to adjust based on content
             />
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50} minSize={30}>
-          <ScrollArea className="h-full p-4 prose dark:prose-invert max-w-none">
+          <div className="p-4 prose dark:prose-invert max-w-none"> {/* Replaced ScrollArea with div, removed h-full and max-h */}
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content}
             </ReactMarkdown>
-          </ScrollArea>
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
