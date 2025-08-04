@@ -158,6 +158,7 @@ export default function DailyJournal() {
       .eq("id", dailySheet.id);
 
     if (error) {
+      console.error("Failed to auto-save content:", error); // Added console.error
       toast.error(`Failed to auto-save: ${error.message}`);
     } else {
       // Optionally, show a subtle success or update a status indicator
