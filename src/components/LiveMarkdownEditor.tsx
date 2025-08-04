@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
 import { createClient } from "@/lib/supabase/client";
 
 interface LiveMarkdownEditorProps {
@@ -30,15 +29,15 @@ export default function LiveMarkdownEditor({
         heading: {
           levels: [1, 2, 3],
         },
-        link: false, // Disable StarterKit's default link to avoid conflicts
+        // Configure the link extension directly within StarterKit
+        link: {
+          openOnClick: false,
+          autolink: true,
+        },
       }),
       Markdown,
       Placeholder.configure({
         placeholder: "Start writing your daily tasks and notes here...",
-      }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
       }),
     ],
     content: initialContent,
@@ -47,7 +46,7 @@ export default function LiveMarkdownEditor({
         class: "ProseMirror",
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: Editor }) => {
       const markdown = editor.storage.markdown.getMarkdown();
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
