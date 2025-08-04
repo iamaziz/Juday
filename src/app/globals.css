@@ -239,8 +239,12 @@
 
 /* Tiptap Editor Styles */
 .ProseMirror {
-  @apply prose dark:prose-invert max-w-none p-4 font-mono text-base;
+  @apply prose dark:prose-invert max-w-none p-4 font-sans text-base;
   min-height: 400px;
+}
+
+.ProseMirror li > p:first-of-type {
+  @apply my-0;
 }
 
 .ProseMirror:focus {
@@ -253,4 +257,29 @@
   color: hsl(var(--muted-foreground));
   pointer-events: none;
   height: 0;
+}
+
+/* Task List Styles */
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none p-0;
+}
+
+.ProseMirror li[data-type="taskItem"] {
+  @apply flex items-start my-2;
+}
+
+.ProseMirror li[data-type="taskItem"] > label {
+  @apply flex-none select-none mr-2 mt-1;
+}
+
+.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"] {
+  @apply h-4 w-4 rounded border-primary text-primary focus:ring-primary cursor-pointer;
+}
+
+.ProseMirror li[data-type="taskItem"] > div {
+  @apply flex-1;
+}
+
+.ProseMirror li[data-type="taskItem"][data-checked="true"] > div {
+  @apply text-muted-foreground line-through;
 }
