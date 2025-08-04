@@ -17,7 +17,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import HistoricalSheetItem from "./HistoricalSheetItem";
-import { useUserActivity } from "@/hooks/use-user-activity"; // Import the new hook
+import { useUserActivity } from "@/hooks/use-user-activity";
+import { ThemeSwitcher } from "./theme-switcher";
 
 interface SheetItem {
   id: string;
@@ -38,8 +39,8 @@ export default function DailyJournal() {
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
   
-  const isUserActive = useUserActivity(); // Use the new hook
-  const [isEditorFocused, setIsEditorFocused] = useState(false); // New state for editor focus
+  const isUserActive = useUserActivity();
+  const [isEditorFocused, setIsEditorFocused] = useState(false);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -313,6 +314,7 @@ export default function DailyJournal() {
               </Button>
             </>
           )}
+          <ThemeSwitcher />
         </div>
       </header>
 
