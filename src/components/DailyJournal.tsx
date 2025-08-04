@@ -267,7 +267,7 @@ export default function DailyJournal() {
             Today
             <DateTimeDisplay />
           </h1>
-          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={60} height={60} className="mt-2" />
+          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={80} height={80} />
         </div>
         <div className="flex items-center space-x-2">
           {user && (
