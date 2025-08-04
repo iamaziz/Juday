@@ -319,7 +319,7 @@ export default function DailyJournal() {
         {user ? (
           <>
             {currentDaySheet ? (
-              <div className="w-full max-w-[1200px] flex-1">
+              <div className="w-full max-w-4xl flex-1">
                 <LiveMarkdownEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
@@ -333,7 +333,7 @@ export default function DailyJournal() {
 
             {loadedHistoricalSheets.length > 0 && (
               <div className={cn(
-                "w-full max-w-[1200px] space-y-8 mt-8 transition-opacity duration-300",
+                "w-full max-w-4xl space-y-8 mt-8 transition-opacity duration-300",
                 isFocusModeActive && "opacity-5 pointer-events-none"
               )}>
                 {loadedHistoricalSheets.map((sheet) => (
