@@ -1,10 +1,10 @@
-import SheetManager from "@/components/SheetManager";
+import DailyJournal from "@/components/DailyJournal";
 import { Toaster } from "@/components/ui/sonner";
 
 export default function Home() {
   return (
     <>
-      <SheetManager />
+      <DailyJournal />
       <Toaster />
     </>
   );

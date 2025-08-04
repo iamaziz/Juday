@@ -151,3 +151,88 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add basic prose styles for markdown rendering */
+.prose {
+  @apply text-foreground;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply text-foreground font-bold;
+}
+
+.prose p {
+  @apply text-foreground leading-relaxed;
+}
+
+.prose ul, .prose ol {
+  @apply list-inside;
+}
+
+.prose li {
+  @apply my-1;
+}
+
+.prose a {
+  @apply text-primary hover:underline;
+}
+
+.prose code {
+  @apply bg-muted text-muted-foreground rounded px-1 py-0.5 text-sm;
+}
+
+.prose pre {
+  @apply bg-muted text-muted-foreground p-3 rounded-md overflow-x-auto;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-border pl-4 italic text-muted-foreground;
+}
+
+.prose table {
+  @apply w-full border-collapse;
+}
+
+.prose th, .prose td {
+  @apply border border-border p-2 text-left;
+}
+
+.prose strong {
+  @apply font-semibold;
+}
+
+.prose em {
+  @apply italic;
+}
+
+.prose hr {
+  @apply border-t border-border my-4;
+}
+
+.prose img {
+  @apply max-w-full h-auto rounded-md;
+}
+
+.prose-invert .prose {
+  @apply text-foreground; /* Ensure text is visible in dark mode */
+}
+
+.prose-invert .prose h1, .prose-invert .prose h2, .prose-invert .prose h3, .prose-invert .prose h4, .prose-invert .prose h5, .prose-invert .prose h6 {
+  @apply text-foreground;
+}
+
+.prose-invert .prose a {
+  @apply text-primary-foreground;
+}
+
+.prose-invert .prose code {
+  @apply bg-accent text-accent-foreground;
+}
+
+.prose-invert .prose pre {
+  @apply bg-accent text-accent-foreground;
+}
+
+.prose-invert .prose blockquote {
+  @apply border-border;
+}
