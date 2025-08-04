@@ -309,11 +309,11 @@ export default function DailyJournal() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4 overflow-y-auto">
+      <main className="flex-1 flex flex-col items-center p-4"> {/* Removed overflow-y-auto */}
         {user ? (
           <>
             {currentDaySheet ? (
-              <div className="w-full max-w-[1200px] mb-8">
+              <div className="w-full max-w-[1200px] flex-1"> {/* Added flex-1, removed mb-8 */}
                 <DailySheetEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
@@ -327,7 +327,7 @@ export default function DailyJournal() {
 
             {loadedHistoricalSheets.length > 0 && (
               <div className={cn(
-                "w-full max-w-[1200px] space-y-8 transition-opacity duration-300",
+                "w-full max-w-[1200px] space-y-8 mt-8 transition-opacity duration-300", // Added mt-8
                 isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
               )}>
                 {loadedHistoricalSheets.map((sheet) => (
