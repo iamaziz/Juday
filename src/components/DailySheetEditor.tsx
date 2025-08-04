@@ -12,9 +12,10 @@ interface DailySheetEditorProps {
   sheetId: string;
   initialContent: string;
   onContentChange: (content: string) => void;
+  onFocusChange?: (isFocused: boolean) => void; // Re-added prop for focus change
 }
 
-export default function DailySheetEditor({ sheetId, initialContent, onContentChange }: DailySheetEditorProps) {
+export default function DailySheetEditor({ sheetId, initialContent, onContentChange, onFocusChange }: DailySheetEditorProps) {
   const supabase = createClient();
   const [content, setContent] = useState(initialContent);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,6 +47,14 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
     debounceTimeoutRef.current = setTimeout(() => {
       onContentChange(newContent);
     }, 1000);
+  };
+
+  const handleFocus = () => {
+    onFocusChange?.(true); // Notify parent when textarea gains focus
+  };
+
+  const handleBlur = () => {
+    onFocusChange?.(false); // Notify parent when textarea loses focus
   };
 
   // Realtime subscription for content synchronization
@@ -102,6 +111,8 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
               placeholder="Start writing your daily tasks and notes here in Markdown..."
               value={content}
               onChange={handleInputChange}
+              onFocus={handleFocus} {/* Added onFocus handler */}
+              onBlur={handleBlur}   {/* Added onBlur handler */}
               className="w-full resize-none border-none focus-visible:ring-0 font-mono text-base flex-grow overflow-y-hidden"
               style={{ height: 'auto' }}
             />
