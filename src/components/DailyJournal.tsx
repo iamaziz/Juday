@@ -259,14 +259,16 @@ export default function DailyJournal() {
   return (
     <div className="flex flex-col h-screen">
       <header className={cn(
-        "flex items-center justify-between px-4 py-4 bg-background transition-opacity duration-300",
+        "flex items-start justify-between px-4 py-4 bg-background transition-opacity duration-300",
         isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
       )}>
-        <h1 className="text-4xl font-semibold relative inline-flex items-center">
-          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={90} height={140} className="mr-0" />
-          Juday
-          <DateTimeDisplay />
-        </h1>
+        <div>
+          <h1 className="text-4xl font-semibold relative">
+            Today
+            <DateTimeDisplay />
+          </h1>
+          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={60} height={60} className="mt-2" />
+        </div>
         <div className="flex items-center space-x-2">
           {user && (
             <Popover>
