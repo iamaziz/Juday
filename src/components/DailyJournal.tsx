@@ -16,6 +16,7 @@ import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { ThemeSwitcher } from "./theme-switcher";
+import Image from "next/image";
 
 interface SheetItem {
   id: string;
@@ -261,7 +262,8 @@ export default function DailyJournal() {
         "flex items-center justify-between px-4 py-4 bg-background transition-opacity duration-300",
         isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
       )}>
-        <h1 className="text-4xl font-semibold relative inline-flex items-baseline">
+        <h1 className="text-4xl font-semibold relative inline-flex items-center">
+          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={40} height={40} className="mr-3" />
           Today
           <DateTimeDisplay />
         </h1>
