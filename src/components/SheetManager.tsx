@@ -1,13 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Menu, FileText } from "lucide-react";
+import SheetEditor from "./SheetEditor";
+
+interface SheetItem {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function SheetManager() {
   const supabase = createClient();
@@ -15,22 +25,59 @@ export default function SheetManager() {
   const [email, setEmail] = useState("");
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [sheets, setSheets] = useState<SheetItem[]>([]);
+  const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const fetchSheets = useCallback(async () => {
+    if (!user) {
+      setSheets([]);
+      setSelectedSheetId(null);
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("sheets")
+      .select("id, title, content, created_at, updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      toast.error(`Failed to load sheets: ${error.message}`);
+      setSheets([]);
+    } else {
+      setSheets(data || []);
+      if (selectedSheetId && !data?.some(sheet => sheet.id === selectedSheetId)) {
+        setSelectedSheetId(null);
+      }
+    }
+    setLoading(false);
+  }, [user, supabase, selectedSheetId]);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       setLoading(false);
+      if (user) {
+        fetchSheets();
+      }
     };
 
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
+      if (session?.user) {
+        fetchSheets();
+      } else {
+        setSheets([]);
+        setSelectedSheetId(null);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, [supabase, fetchSheets]);
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -56,13 +103,41 @@ export default function SheetManager() {
       toast.error(error.message);
     } else {
       toast.success("Signed out successfully!");
+      setSheets([]);
+      setSelectedSheetId(null);
     }
     setLoading(false);
   };
 
-  const handleCreateSheet = () => {
-    toast.info("Sheet creation functionality coming soon!");
+  const handleCreateSheet = async () => {
+    if (!user) {
+      toast.error("Please sign in to create a sheet.");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("sheets")
+      .insert({ user_id: user.id, title: "Untitled Sheet", content: "" })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error(`Failed to create sheet: ${error.message}`);
+    } else {
+      toast.success("New sheet created!");
+      await fetchSheets();
+      setSelectedSheetId(data.id);
+      if (isMobile) setIsSheetOpen(false);
+    }
+    setLoading(false);
   };
+
+  const handleSelectSheet = (sheetId: string) => {
+    setSelectedSheetId(sheetId);
+    if (isMobile) setIsSheetOpen(false);
+  };
+
+  const selectedSheet = sheets.find((sheet) => sheet.id === selectedSheetId);
 
   if (loading) {
     return (
@@ -72,49 +147,68 @@ export default function SheetManager() {
     );
   }
 
+  const renderSidebarContent = () => (
+    <>
+      {user ? (
+        <>
+          <p className="text-sm mb-2">Welcome, {user.email}</p>
+          <Button onClick={handleSignOut} disabled={loading} className="mb-4">
+            Sign Out
+          </Button>
+          <Button onClick={handleCreateSheet} className="mb-4">
+            New Sheet
+          </Button>
+          <div className="flex-grow border-t border-sidebar-border pt-4">
+            <h3 className="text-lg font-medium mb-2">Your Sheets</h3>
+            {sheets.length > 0 ? (
+              <ScrollArea className="h-[calc(100vh-200px)] pr-2">
+                {sheets.map((sheet) => (
+                  <Button
+                    key={sheet.id}
+                    variant={selectedSheetId === sheet.id ? "secondary" : "ghost"}
+                    className="w-full justify-start mb-1"
+                    onClick={() => handleSelectSheet(sheet.id)}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    {sheet.title || "Untitled Sheet"}
+                  </Button>
+                ))}
+              </ScrollArea>
+            ) : (
+              <p className="text-muted-foreground text-sm">No sheets yet. Create one!</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="space-y-2">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-sidebar-background text-sidebar-foreground border-sidebar-border focus:ring-sidebar-ring"
+          />
+          <Button onClick={handleSignIn} disabled={loading || !email}>
+            Sign In with Magic Link
+          </Button>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="flex h-screen">
-      {/* Sidebar for desktop */}
       {!isMobile && (
         <aside className="w-64 border-r bg-sidebar text-sidebar-foreground p-4 flex flex-col">
-          <h2 className="text-xl font-semibold mb-4 text-sidebar-primary">My Sheets</h2>
-          {user ? (
-            <>
-              <p className="text-sm mb-2">Welcome, {user.email}</p>
-              <Button onClick={handleSignOut} disabled={loading} className="mb-4">
-                Sign Out
-              </Button>
-              <Button onClick={handleCreateSheet} className="mb-4">
-                New Sheet
-              </Button>
-              <div className="flex-grow border-t border-sidebar-border pt-4">
-                {/* Placeholder for sheet list */}
-                <p className="text-muted-foreground">No sheets yet. Create one!</p>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-sidebar-background text-sidebar-foreground border-sidebar-border focus:ring-sidebar-ring"
-              />
-              <Button onClick={handleSignIn} disabled={loading || !email}>
-                Sign In with Magic Link
-              </Button>
-            </div>
-          )}
+          {renderSidebarContent()}
         </aside>
       )}
 
-      {/* Main content area */}
       <main className="flex-1 flex flex-col">
         {isMobile && (
           <header className="flex items-center justify-between p-4 border-b bg-background">
             <h1 className="text-xl font-semibold">My Sheets</h1>
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Menu className="h-4 w-4" />
@@ -124,40 +218,22 @@ export default function SheetManager() {
                 <SheetHeader>
                   <SheetTitle className="text-sidebar-primary">My Sheets</SheetTitle>
                 </SheetHeader>
-                {user ? (
-                  <>
-                    <p className="text-sm mb-2">Welcome, {user.email}</p>
-                    <Button onClick={handleSignOut} disabled={loading} className="mb-4">
-                      Sign Out
-                    </Button>
-                    <Button onClick={handleCreateSheet} className="mb-4">
-                      New Sheet
-                    </Button>
-                    <div className="flex-grow border-t border-sidebar-border pt-4">
-                      {/* Placeholder for mobile sheet list */}
-                      <p className="text-muted-foreground">No sheets yet. Create one!</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-sidebar-background text-sidebar-foreground border-sidebar-border focus:ring-sidebar-ring"
-                    />
-                    <Button onClick={handleSignIn} disabled={loading || !email}>
-                      Sign In with Magic Link
-                    </Button>
-                  </div>
-                )}
+                {renderSidebarContent()}
               </SheetContent>
             </Sheet>
           </header>
         )}
         <div className="flex-1 flex items-center justify-center p-4">
-          <p className="text-muted-foreground">Select a sheet or create a new one to start editing.</p>
+          {selectedSheet ? (
+            <SheetEditor
+              sheetId={selectedSheet.id}
+              initialTitle={selectedSheet.title}
+              initialContent={selectedSheet.content}
+              onSaveSuccess={fetchSheets}
+            />
+          ) : (
+            <p className="text-muted-foreground">Select a sheet or create a new one to start editing.</p>
+          )}
         </div>
       </main>
     </div>
