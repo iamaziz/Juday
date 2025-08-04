@@ -79,7 +79,7 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
 
   return (
     <div className="w-full h-full max-w-[1200px] flex flex-col">
-      <ResizablePanelGroup direction="horizontal" className="flex-1 border rounded-lg overflow-hidden">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg overflow-hidden">
         <ResizablePanel defaultSize={50} minSize={30}>
           <div className="h-full p-4">
             <Textarea

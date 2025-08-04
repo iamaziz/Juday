@@ -177,7 +177,7 @@ export default function DailyJournal() {
   return (
     <div className="flex flex-col h-screen">
       <header className="flex items-center justify-between p-4 border-b bg-background">
-        <h1 className="text-xl font-semibold">Daily Journal</h1>
+        <h1 className="text-xl font-semibold">Today</h1>
         {user ? (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
