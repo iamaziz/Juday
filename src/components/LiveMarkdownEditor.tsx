@@ -61,6 +61,7 @@ export default function LiveMarkdownEditor({
     onBlur: () => {
       onFocusChange?.(false);
     },
+    immediatelyRender: false,
   });
 
   // Effect to update editor content when initialContent prop changes (e.g., on date change)
