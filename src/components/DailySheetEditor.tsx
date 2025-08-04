@@ -6,6 +6,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area"; // Added this import
 
 interface DailySheetEditorProps {
   initialContent: string;
