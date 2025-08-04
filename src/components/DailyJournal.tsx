@@ -16,6 +16,7 @@ import { useInView } from "react-intersection-observer";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import HistoricalSheetItem from "./HistoricalSheetItem"; // Import the new component
 
 interface SheetItem {
   id: string;
@@ -113,7 +114,7 @@ export default function DailyJournal() {
       .from("sheets")
       .select("id, title, content, created_at, updated_at")
       .eq("user_id", userId)
-      .lt("title", formattedBeforeDate)
+      .lt("title", formattedBeforeDate) // Fetch sheets with titles *before* the given date
       .order("title", { ascending: false })
       .limit(limit);
 
@@ -176,9 +177,8 @@ export default function DailyJournal() {
       setHasMoreSheets(true);
 
       fetchOrCreateCurrentSheet(user.id, selectedDate);
-      const dayBeforeSelected = new Date(selectedDate);
-      dayBeforeSelected.setDate(selectedDate.getDate() - 1);
-      fetchHistoricalSheets(user.id, dayBeforeSelected, SHEETS_PER_LOAD);
+      // Fix: Pass selectedDate directly to fetch historical sheets to include the day before selectedDate
+      fetchHistoricalSheets(user.id, selectedDate, SHEETS_PER_LOAD);
     } else if (!user) {
       setCurrentDaySheet(null);
       setLoadedHistoricalSheets([]);
@@ -327,16 +327,7 @@ export default function DailyJournal() {
               <div className="w-full max-w-[1200px] space-y-8">
                 <h2 className="text-2xl font-semibold mt-8 mb-4">Previous Days</h2>
                 {loadedHistoricalSheets.map((sheet) => (
-                  <div key={sheet.id} className="border rounded-lg p-4 bg-card animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h3 className="text-xl font-semibold mb-2 text-muted-foreground">
-                      {format(parseISO(sheet.title), "EEEE, MMMM d, yyyy")}
-                    </h3>
-                    <ScrollArea className="h-auto max-h-[300px] prose dark:prose-invert max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {sheet.content || "*No content for this day.*"}
-                      </ReactMarkdown>
-                    </ScrollArea>
-                  </div>
+                  <HistoricalSheetItem key={sheet.id} sheet={sheet} />
                 ))}
               </div>
             )}
