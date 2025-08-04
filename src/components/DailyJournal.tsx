@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import DailySheetEditor from "./DailySheetEditor";
+import LiveMarkdownEditor from "./LiveMarkdownEditor";
 import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,9 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import HistoricalSheetItem from "./HistoricalSheetItem";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { ThemeSwitcher } from "./theme-switcher";
@@ -318,16 +315,16 @@ export default function DailyJournal() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4">
+      <main className="flex-1 flex flex-col items-center p-4 overflow-y-auto">
         {user ? (
           <>
             {currentDaySheet ? (
               <div className="w-full max-w-[1200px] flex-1">
-                <DailySheetEditor
+                <LiveMarkdownEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
                   onContentChange={handleContentSave}
-                  onFocusChange={setIsEditorFocused} // Pass the setter for editor focus state
+                  onFocusChange={setIsEditorFocused}
                 />
               </div>
             ) : (
@@ -337,7 +334,7 @@ export default function DailyJournal() {
             {loadedHistoricalSheets.length > 0 && (
               <div className={cn(
                 "w-full max-w-[1200px] space-y-8 mt-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
+                isFocusModeActive && "opacity-5 pointer-events-none"
               )}>
                 {loadedHistoricalSheets.map((sheet) => (
                   <HistoricalSheetItem key={sheet.id} sheet={sheet} />
@@ -348,7 +345,7 @@ export default function DailyJournal() {
             {hasMoreSheets && user && (
               <div ref={ref} className={cn(
                 "flex justify-center py-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
+                isFocusModeActive && "opacity-5 pointer-events-none"
               )}>
                 {loading ? (
                   <p className="text-muted-foreground">Loading more sheets...</p>
@@ -369,7 +366,7 @@ export default function DailyJournal() {
             {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
               <p className={cn(
                 "text-muted-foreground py-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
+                isFocusModeActive && "opacity-5 pointer-events-none"
               )}>No more historical sheets.</p>
             )}
           </>

@@ -236,3 +236,21 @@
 .prose-invert .prose blockquote {
   @apply border-border;
 }
+
+/* Tiptap Editor Styles */
+.ProseMirror {
+  @apply prose dark:prose-invert max-w-none p-4 font-mono text-base;
+  min-height: 400px;
+}
+
+.ProseMirror:focus {
+  @apply outline-none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
