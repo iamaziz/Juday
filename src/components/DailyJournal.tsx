@@ -176,12 +176,12 @@ export default function DailyJournal() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center justify-between p-4 border-b bg-background">
-        <h1 className="text-xl font-semibold">Today</h1>
+      <header className="flex items-center justify-between px-4 py-2 bg-background">
+        <h1 className="text-4xl font-semibold">Today</h1>
         {user ? (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
-            <Button onClick={handleSignOut} disabled={loading} size="sm">
+            <Button onClick={handleSignOut} disabled={loading} size="sm" className="h-8 px-3 text-sm">
               Sign Out
             </Button>
           </div>
@@ -192,9 +192,9 @@ export default function DailyJournal() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-48"
+              className="w-48 h-8 text-sm"
             />
-            <Button onClick={handleSignIn} disabled={loading || !email} size="sm">
+            <Button onClick={handleSignIn} disabled={loading || !email} size="sm" className="h-8 px-3 text-sm">
               Sign In
             </Button>
           </div>
