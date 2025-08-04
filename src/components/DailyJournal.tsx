@@ -36,6 +36,7 @@ export default function DailyJournal() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
+  const [isEditorActive, setIsEditorActive] = useState(false); // New state for editor focus
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -251,7 +252,10 @@ export default function DailyJournal() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex items-center justify-between px-4 py-4 bg-background">
+      <header className={cn(
+        "flex items-center justify-between px-4 py-4 bg-background transition-opacity duration-300",
+        isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+      )}>
         <h1 className="text-4xl font-semibold relative inline-flex items-baseline">
           Today
           <DateTimeDisplay />
@@ -317,6 +321,7 @@ export default function DailyJournal() {
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
                   onContentChange={handleContentSave}
+                  onFocusChange={setIsEditorActive} // Pass the focus change handler
                 />
               </div>
             ) : (
@@ -324,7 +329,10 @@ export default function DailyJournal() {
             )}
 
             {loadedHistoricalSheets.length > 0 && (
-              <div className="w-full max-w-[1200px] space-y-8">
+              <div className={cn(
+                "w-full max-w-[1200px] space-y-8 transition-opacity duration-300",
+                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+              )}>
                 <h2 className="text-2xl font-semibold mt-8 mb-4">Previous Days</h2>
                 {loadedHistoricalSheets.map((sheet) => (
                   <HistoricalSheetItem key={sheet.id} sheet={sheet} />
@@ -333,7 +341,10 @@ export default function DailyJournal() {
             )}
 
             {hasMoreSheets && user && (
-              <div ref={ref} className="flex justify-center py-8">
+              <div ref={ref} className={cn(
+                "flex justify-center py-8 transition-opacity duration-300",
+                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+              )}>
                 {loading ? (
                   <p className="text-muted-foreground">Loading more sheets...</p>
                 ) : (
@@ -351,7 +362,10 @@ export default function DailyJournal() {
               </div>
             )}
             {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
-              <p className="text-muted-foreground py-8">No more historical sheets.</p>
+              <p className={cn(
+                "text-muted-foreground py-8 transition-opacity duration-300",
+                isEditorActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events
+              )}>No more historical sheets.</p>
             )}
           </>
         ) : (

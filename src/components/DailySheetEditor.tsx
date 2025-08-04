@@ -13,9 +13,10 @@ interface DailySheetEditorProps {
   sheetId: string; // New prop for the sheet ID
   initialContent: string;
   onContentChange: (content: string) => void;
+  onFocusChange?: (isFocused: boolean) => void; // New prop for focus change
 }
 
-export default function DailySheetEditor({ sheetId, initialContent, onContentChange }: DailySheetEditorProps) {
+export default function DailySheetEditor({ sheetId, initialContent, onContentChange, onFocusChange }: DailySheetEditorProps) {
   const supabase = createClient(); // Initialize Supabase client
   const [content, setContent] = useState(initialContent);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -35,6 +36,14 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
     debounceTimeoutRef.current = setTimeout(() => {
       onContentChange(newContent);
     }, 1000); // Save after 1 second of no typing
+  };
+
+  const handleFocus = () => {
+    onFocusChange?.(true);
+  };
+
+  const handleBlur = () => {
+    onFocusChange?.(false);
   };
 
   // Realtime subscription for content synchronization
@@ -86,6 +95,8 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
               placeholder="Start writing your daily tasks and notes here in Markdown..."
               value={content}
               onChange={handleInputChange}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="flex-1 resize-none border-none focus-visible:ring-0 h-full font-mono text-base"
             />
           </div>
