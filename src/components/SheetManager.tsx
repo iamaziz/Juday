@@ -29,8 +29,9 @@ export default function SheetManager() {
   const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Helper function to fetch sheets data, not a useCallback
-  const fetchSheetsData = async (userId: string) => {
+  // Function to fetch sheets, not a useCallback, as it's called from effects
+  const fetchAndSetSheets = async (userId: string, currentSelectedId: string | null) => {
+    setLoading(true);
     const { data, error } = await supabase
       .from("sheets")
       .select("id, title, content, created_at, updated_at")
@@ -39,65 +40,73 @@ export default function SheetManager() {
 
     if (error) {
       toast.error(`Failed to load sheets: ${error.message}`);
-      return [];
-    }
-    return data || [];
-  };
-
-  // This function will be called to refresh the sheet list and manage selection
-  // It takes the currently selected sheet ID as an argument to avoid dependency issues
-  const handleRefreshSheets = useCallback(async (currentUserId: string, prevSelectedSheetId: string | null) => {
-    setLoading(true);
-    const fetchedSheets = await fetchSheetsData(currentUserId);
-    setSheets(fetchedSheets);
-
-    // Logic to set selectedSheetId after sheets are fetched
-    if (prevSelectedSheetId && fetchedSheets.some(sheet => sheet.id === prevSelectedSheetId)) {
-      setSelectedSheetId(prevSelectedSheetId); // Keep current selection if it still exists
-    } else if (fetchedSheets.length > 0) {
-      setSelectedSheetId(fetchedSheets[0].id); // Select the first sheet
+      setSheets([]);
+      setSelectedSheetId(null);
     } else {
-      setSelectedSheetId(null); // No sheets available
+      setSheets(data || []);
+      // Logic to set selectedSheetId after sheets are fetched
+      if (currentSelectedId && data?.some(sheet => sheet.id === currentSelectedId)) {
+        setSelectedSheetId(currentSelectedId); // Keep current selection if it still exists
+      } else if (data && data.length > 0) {
+        setSelectedSheetId(data[0].id); // Select the first sheet
+      } else {
+        setSelectedSheetId(null); // No sheets available
+      }
     }
     setLoading(false);
-  }, [supabase]); // Only depends on supabase, which is stable.
+  };
 
-  // Effect to load sheets when user changes or on initial mount
+  // Effect 1: Handle initial user load and auth state changes
   useEffect(() => {
-    const initializeUserAndSheets = async () => {
-      setLoading(true);
-      const { data: { user: initialUser } } = await supabase.auth.getUser();
-      setUser(initialUser);
+    let isMounted = true;
 
-      if (initialUser) {
-        // Pass the current value of selectedSheetId from the state closure
-        await handleRefreshSheets(initialUser.id, selectedSheetId);
-      } else {
-        setSheets([]);
-        setSelectedSheetId(null);
-        setLoading(false);
+    const initializeAuth = async () => {
+      setLoading(true); // Start loading
+      const { data: { user: initialUser } } = await supabase.auth.getUser();
+      if (isMounted) {
+        setUser(initialUser);
+        // Initial fetch of sheets will be handled by the next useEffect reacting to `user`
+        // Set loading to false here only if no user, otherwise the next effect will manage it
+        if (!initialUser) {
+          setLoading(false);
+        }
       }
     };
 
-    initializeUserAndSheets();
+    initializeAuth();
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Only update user and trigger sheet load if the user object actually changes
-      if (session?.user?.id !== user?.id) {
+      if (isMounted) {
+        // This will trigger the second useEffect if user changes
         setUser(session?.user || null);
-        if (session?.user) {
-          // Pass the current value of selectedSheetId from the state closure
-          handleRefreshSheets(session.user.id, selectedSheetId);
-        } else {
-          setSheets([]);
-          setSelectedSheetId(null);
-        }
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [supabase, handleRefreshSheets, user]); // Removed selectedSheetId from dependencies here to prevent re-fetch loops.
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]); // Only depends on supabase
+
+  // Effect 2: Fetch sheets whenever the `user` state changes
+  useEffect(() => {
+    let isMounted = true;
+    if (user) {
+      // Fetch sheets when user becomes available or changes
+      fetchAndSetSheets(user.id, selectedSheetId); // Pass current selectedId to try and preserve it
+    } else {
+      // If user logs out, clear sheets and stop loading
+      setSheets([]);
+      setSelectedSheetId(null);
+      if (isMounted) { // Only set loading to false if component is still mounted
+        setLoading(false);
+      }
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [user, supabase]); // Depends on user and supabase. selectedSheetId is passed as an argument to fetchAndSetSheets, not a dependency of this effect.
+
 
   const handleSignIn = async () => {
     setLoading(true);
@@ -146,7 +155,7 @@ export default function SheetManager() {
     } else {
       toast.success("New sheet created!");
       // After creating, refresh sheets and select the new one
-      await handleRefreshSheets(user.id, data.id); // Pass the new sheet's ID to select it
+      await fetchAndSetSheets(user.id, data.id); // Use the new function
       if (isMobile) setIsSheetOpen(false);
     }
     setLoading(false);
@@ -249,7 +258,7 @@ export default function SheetManager() {
               sheetId={selectedSheet.id}
               initialTitle={selectedSheet.title}
               initialContent={selectedSheet.content}
-              onSaveSuccess={() => handleRefreshSheets(user.id, selectedSheet.id)} // Pass current user and selected ID
+              onSaveSuccess={() => fetchAndSetSheets(user.id, selectedSheet.id)} // Pass current user and selected ID
             />
           ) : (
             <p className="text-muted-foreground">Select a sheet or create a new one to start editing.</p>
