@@ -263,7 +263,7 @@ export default function DailyJournal() {
         isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
       )}>
         <h1 className="text-4xl font-semibold relative inline-flex items-center">
-          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={40} height={40} className="mr-3" />
+          <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={60} height={60} className="mr-3" />
           Today
           <DateTimeDisplay />
         </h1>
