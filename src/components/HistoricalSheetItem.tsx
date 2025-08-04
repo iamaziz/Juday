@@ -32,9 +32,9 @@ export default function HistoricalSheetItem({ sheet }: HistoricalSheetItemProps)
     <div
       ref={ref}
       className={cn(
-        "p-4 bg-card transition-opacity duration-300", // Removed border and rounded-lg
-        "animate-in fade-in slide-in-from-bottom-4 duration-500", // Existing animation
-        (inView || isHovered) ? "opacity-100" : "opacity-5" // Changed default opacity to 5%
+        "p-4 bg-card transition-opacity duration-300",
+        "animate-in fade-in slide-in-from-bottom-4 duration-500",
+        (inView || isHovered) ? "opacity-100" : "opacity-20" // Increased default opacity to 20%
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
