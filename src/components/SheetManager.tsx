@@ -60,6 +60,10 @@ export default function SheetManager() {
     setLoading(false);
   };
 
+  const handleCreateSheet = () => {
+    toast.info("Sheet creation functionality coming soon!");
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,6 +83,9 @@ export default function SheetManager() {
               <p className="text-sm mb-2">Welcome, {user.email}</p>
               <Button onClick={handleSignOut} disabled={loading} className="mb-4">
                 Sign Out
+              </Button>
+              <Button onClick={handleCreateSheet} className="mb-4">
+                New Sheet
               </Button>
               <div className="flex-grow border-t border-sidebar-border pt-4">
                 {/* Placeholder for sheet list */}
@@ -122,6 +129,9 @@ export default function SheetManager() {
                     <p className="text-sm mb-2">Welcome, {user.email}</p>
                     <Button onClick={handleSignOut} disabled={loading} className="mb-4">
                       Sign Out
+                    </Button>
+                    <Button onClick={handleCreateSheet} className="mb-4">
+                      New Sheet
                     </Button>
                     <div className="flex-grow border-t border-sidebar-border pt-4">
                       {/* Placeholder for mobile sheet list */}
