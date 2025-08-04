@@ -99,20 +99,17 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
   }, []);
 
   return (
-    // Outer div of DailySheetEditor should grow to take available space
     <div className="w-full max-w-[1200px] flex flex-col flex-grow">
-      {/* ResizablePanelGroup should also grow */}
       <ResizablePanelGroup direction="horizontal" className="flex-grow rounded-lg">
         <ResizablePanel defaultSize={50} minSize={30} className="h-full">
-          {/* This div should fill its panel and be a flex container for the textarea */}
           <div className="p-4 h-full flex flex-col">
             <Textarea
               ref={textareaRef}
               placeholder="Start writing your daily tasks and notes here in Markdown..."
               value={content}
               onChange={handleInputChange}
-              onFocus={handleFocus} {/* Added onFocus handler */}
-              onBlur={handleBlur}   {/* Added onBlur handler */}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               className="w-full resize-none border-none focus-visible:ring-0 font-mono text-base flex-grow overflow-y-hidden"
               style={{ height: 'auto' }}
             />
@@ -120,7 +117,6 @@ export default function DailySheetEditor({ sheetId, initialContent, onContentCha
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50} minSize={30} className="h-full">
-          {/* This div should fill its panel and allow its content to scroll if needed */}
           <div className="p-4 prose dark:prose-invert max-w-none h-full overflow-y-auto">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content}
