@@ -287,7 +287,7 @@ export default function DailyJournal() {
         )}>
           <div>
             <h1 className="text-4xl font-semibold relative">
-              Today
+              Juday
               <DateTimeDisplay />
             </h1>
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 50 }}>
