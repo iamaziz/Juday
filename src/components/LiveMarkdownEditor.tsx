@@ -68,7 +68,7 @@ export default function LiveMarkdownEditor({
       onFocusChange?.(false);
     },
     immediatelyRender: false,
-  }, [textDirection]);
+  });
 
   // Effect to update editor content when initialContent prop changes (e.g., on date change)
   useEffect(() => {
