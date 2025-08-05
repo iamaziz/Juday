@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { format } from 'date-fns';
-import { cookies } from 'next/headers';
 
 interface ExportResult {
   success?: boolean;
@@ -12,8 +11,7 @@ interface ExportResult {
 }
 
 export async function exportAllData(): Promise<ExportResult> {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 
