@@ -6,7 +6,9 @@
   <a href="https://juday.vercel.app/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Deployed%20on-Vercel-black?style=flat-square&logo=vercel" alt="Deployed on Vercel"/></a>
   <a href="https://juday.vercel.app/" target="_blank" rel="noopener noreferrer"><img src="https://vercel.com/iamaziz/juday/shield" alt="Vercel Deployment Status"/></a>
   <br/><br/>
-  [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamaziz%2FJuday)
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamaziz%2FJuday" target="_blank" rel="noopener noreferrer">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
+  </a>
 </div>
 
 ## Juday... Just Today!
