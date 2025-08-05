@@ -17,6 +17,12 @@ import HistoricalSheetItem from "./HistoricalSheetItem";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SheetItem {
   id: string;
@@ -273,143 +279,158 @@ export default function DailyJournal() {
   }
 
   return (
-    <div className="flex flex-col">
-      <header className={cn(
-        "sticky top-0 z-10 flex items-start justify-between px-4 py-4 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
-        isFocusModeActive && "opacity-5 pointer-events-none"
-      )}>
-        <div>
-          <h1 className="text-4xl font-semibold relative">
-            Today
-            <DateTimeDisplay />
-          </h1>
-          <div style={{ position: "fixed", top: 16, left: 16, zIndex: 50 }}>
-            <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={130} height={130} />
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          {user && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[180px] justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          )}
-          {user ? (
-            <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
-              <Button onClick={handleSignOut} disabled={loading} size="sm" className="h-8 px-3 text-sm">
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-48 h-8 text-sm"
-              />
-              <Button onClick={handleSignIn} disabled={loading || !email} size="sm" className="h-8 px-3 text-sm">
-                Sign In
-              </Button>
-              <Button onClick={handleGitHubSignIn} disabled={loading} variant="outline" size="sm" className="h-8 px-3 text-sm flex items-center">
-                <Github className="mr-2 h-4 w-4" />
-                GitHub
-              </Button>
+    <TooltipProvider>
+      <div className="flex flex-col">
+        <header className={cn(
+          "sticky top-0 z-10 flex items-start justify-between px-4 py-4 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
+          isFocusModeActive && "opacity-5 pointer-events-none"
+        )}>
+          <div>
+            <h1 className="text-4xl font-semibold relative">
+              Today
+              <DateTimeDisplay />
+            </h1>
+            <div style={{ position: "fixed", top: 16, left: 16, zIndex: 50 }}>
+              <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={130} height={130} />
             </div>
-          )}
-          <ThemeSwitcher />
-        </div>
-      </header>
-
-      <main>
-        {user ? (
-          <div className="w-full max-w-4xl mx-auto">
-            <section className="flex flex-col px-4 min-h-screen">
-              <div className="flex-1 flex flex-col pt-8 pb-16">
-                {currentDaySheet ? (
-                  <LiveMarkdownEditor
-                    sheetId={currentDaySheet.id}
-                    initialContent={currentDaySheet.content}
-                    onContentChange={handleContentSave}
-                    onFocusChange={setIsEditorFocused}
+          </div>
+          <div className="flex items-center space-x-2">
+            {user && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[180px] justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
                   />
-                ) : (
-                  <div className="h-full flex-1 flex items-center justify-center">
-                    <p className="text-muted-foreground text-center">
-                      No sheet available for this date. You can create one by typing if it's today or a future date.
-                    </p>
+                </PopoverContent>
+              </Popover>
+            )}
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
+                <Button onClick={handleSignOut} disabled={loading} size="sm" className="h-8 px-3 text-sm">
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-48 h-8 text-sm"
+                />
+                <Button onClick={handleSignIn} disabled={loading || !email} size="sm" className="h-8 px-3 text-sm">
+                  Sign In
+                </Button>
+                <Button onClick={handleGitHubSignIn} disabled={loading} variant="outline" size="sm" className="h-8 px-3 text-sm flex items-center">
+                  <Github className="mr-2 h-4 w-4" />
+                  GitHub
+                </Button>
+              </div>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="outline" size="icon" className="h-8 w-8">
+                  <a href="https://github.com/iamaziz/Juday" target="_blank" rel="noopener noreferrer">
+                    <Github className="h-4 w-4" />
+                    <span className="sr-only">View on GitHub</span>
+                  </a>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View on GitHub</p>
+              </TooltipContent>
+            </Tooltip>
+            <ThemeSwitcher />
+          </div>
+        </header>
+
+        <main>
+          {user ? (
+            <div className="w-full max-w-4xl mx-auto">
+              <section className="flex flex-col px-4 min-h-screen">
+                <div className="flex-1 flex flex-col pt-8 pb-16">
+                  {currentDaySheet ? (
+                    <LiveMarkdownEditor
+                      sheetId={currentDaySheet.id}
+                      initialContent={currentDaySheet.content}
+                      onContentChange={handleContentSave}
+                      onFocusChange={setIsEditorFocused}
+                    />
+                  ) : (
+                    <div className="h-full flex-1 flex items-center justify-center">
+                      <p className="text-muted-foreground text-center">
+                        No sheet available for this date. You can create one by typing if it's today or a future date.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              <section className="px-4 pb-16">
+                {loadedHistoricalSheets.length > 0 && (
+                  <div className={cn(
+                    "w-full space-y-8 transition-opacity duration-300",
+                    isFocusModeActive && "opacity-5 pointer-events-none"
+                  )}>
+                    {loadedHistoricalSheets.map((sheet) => (
+                      <HistoricalSheetItem key={sheet.id} sheet={sheet} />
+                    ))}
                   </div>
                 )}
-              </div>
-            </section>
 
-            <section className="px-4 pb-16">
-              {loadedHistoricalSheets.length > 0 && (
-                <div className={cn(
-                  "w-full space-y-8 transition-opacity duration-300",
-                  isFocusModeActive && "opacity-5 pointer-events-none"
-                )}>
-                  {loadedHistoricalSheets.map((sheet) => (
-                    <HistoricalSheetItem key={sheet.id} sheet={sheet} />
-                  ))}
-                </div>
-              )}
-
-              {hasMoreSheets && user && (
-                <div ref={ref} className={cn(
-                  "flex justify-center py-8 transition-opacity duration-300",
-                  isFocusModeActive && "opacity-5 pointer-events-none"
-                )}>
-                  {loading ? (
-                    <p className="text-muted-foreground">Loading more sheets...</p>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        if (earliestLoadedDate) {
-                          fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
-                        }
-                      }}
-                      variant="outline"
-                    >
-                      Load More
-                    </Button>
-                  )}
-                </div>
-              )}
-              {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
-                <p className={cn(
-                  "text-center text-muted-foreground py-8 transition-opacity duration-300",
-                  isFocusModeActive && "opacity-5 pointer-events-none"
-                )}>No more historical sheets.</p>
-              )}
-            </section>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center min-h-screen">
-            <p className="text-muted-foreground">Sign in to start your daily journal.</p>
-          </div>
-        )}
-      </main>
-    </div>
+                {hasMoreSheets && user && (
+                  <div ref={ref} className={cn(
+                    "flex justify-center py-8 transition-opacity duration-300",
+                    isFocusModeActive && "opacity-5 pointer-events-none"
+                  )}>
+                    {loading ? (
+                      <p className="text-muted-foreground">Loading more sheets...</p>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          if (earliestLoadedDate) {
+                            fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
+                          }
+                        }}
+                        variant="outline"
+                      >
+                        Load More
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
+                  <p className={cn(
+                    "text-center text-muted-foreground py-8 transition-opacity duration-300",
+                    isFocusModeActive && "opacity-5 pointer-events-none"
+                  )}>No more historical sheets.</p>
+                )}
+              </section>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-screen">
+              <p className="text-muted-foreground">Sign in to start your daily journal.</p>
+            </div>
+          )}
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
