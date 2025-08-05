@@ -17,6 +17,7 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
 *   **Historical View:** Scroll through past entries with ease.
 *   **Calendar Navigation:** Jump to any date instantly.
 *   **Secure Sign-In:** Email magic link and GitHub authentication.
+*   **Data Import/Export:** Easily import and export your entries.
 *   **Light & Dark Modes:** For your viewing comfort.
 
 For a reason to start using Juday, watch this...
