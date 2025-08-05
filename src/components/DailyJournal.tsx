@@ -10,7 +10,7 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
@@ -214,6 +214,22 @@ export default function DailyJournal() {
     setLoading(false);
   };
 
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+    }
+    // On success, the page will redirect, so no need to set loading to false.
+  };
+
   const handleSignOut = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signOut();
@@ -304,7 +320,7 @@ export default function DailyJournal() {
               </Button>
             </>
           ) : (
-            <>
+            <div className="flex items-center space-x-2">
               <Input
                 type="email"
                 placeholder="Email"
@@ -315,7 +331,11 @@ export default function DailyJournal() {
               <Button onClick={handleSignIn} disabled={loading || !email} size="sm" className="h-8 px-3 text-sm">
                 Sign In
               </Button>
-            </>
+              <Button onClick={handleGitHubSignIn} disabled={loading} variant="outline" size="sm" className="h-8 px-3 text-sm flex items-center">
+                <Github className="mr-2 h-4 w-4" />
+                GitHub
+              </Button>
+            </div>
           )}
           <ThemeSwitcher />
         </div>
