@@ -4,10 +4,7 @@
   <img src="public/Juday-logo.png" alt="Juday Logo" width="200"/>
   <br/>
   <a href="https://juday.vercel.app/" target="_blank" rel="noopener noreferrer">
-    <img src="https://juday.vercel.app/vercel/deploy-badge" alt="Vercel Deployment Status"/>
-  </a>
-  <a href="LICENSE" target="_blank" rel="noopener noreferrer">
-    <img src="https://img.shields.io/badge/license-MIT-blue" alt="License"/>
+    <img src="https://deploy-badge.vercel.app/vercel/juday" alt="Vercel Badge"/>
   </a>
   <br/><br/>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamaziz%2FJuday" target="_blank" rel="noopener noreferrer">
