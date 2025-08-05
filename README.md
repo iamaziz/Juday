@@ -19,7 +19,7 @@ Juday is a minimalist digital journal designed for ultimate focus and simplicity
 *   **Secure Authentication:** Sign in easily and securely with email (magic link) or your GitHub account.
 *   **Light & Dark Modes:** Choose the theme that's easiest on your eyes.
 *   **Data Export:** Download all your entries into a single, portable Markdown file at any time.
-*   **Data Import:** Easily migrate from other applications by importing your journal history from a formatted file.
+*   **Data Import:** Easily migrate from other applications by importing your journal history from a formatted Markdown file, using `---YYYY-MM-DD` as a separator between daily entries.
 
 ### For Local Development
 
