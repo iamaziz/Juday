@@ -291,7 +291,7 @@ export default function DailyJournal() {
               <DateTimeDisplay />
             </h1>
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 50 }}>
-              <Image src="/Juday-logo-removebg-preview.png" alt="Juday Logo" width={130} height={130} />
+              <Image src="/Juday-logo.png" alt="Juday Logo" width={130} height={130} />
             </div>
           </div>
           <div className="flex items-center space-x-2">
