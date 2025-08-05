@@ -8,7 +8,7 @@
 
 Juday is a minimalist digital journal designed for ultimate focus and simplicity. The core idea is to provide a clean, distraction-free space to concentrate on what matters most: **today**. By stripping away clutter and unnecessary features, Juday helps you capture your thoughts, tasks, and reflections for the present moment, fostering clarity and mindfulness.
 
-For a reason to start using Juday, watch...
+For a reason to start using Juday, watch `Signal to Ratio` concept...
 
 <div align="center">
   <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
