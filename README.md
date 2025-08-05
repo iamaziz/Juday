@@ -19,7 +19,7 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
 *   **Secure Sign-In:** Email magic link and GitHub authentication.
 *   **Light & Dark Modes:** For your viewing comfort.
 
-Learn more about the core concept here:
+For a reason to start using Juday, watch this...
 
 <div align="center">
   <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
