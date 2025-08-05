@@ -14,7 +14,7 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
 *   **Distraction-Free Writing:** A clean interface that lets you focus.
 *   **Markdown Support:** Format your notes with simple syntax.
 *   **Real-Time Sync:** Autosaved and synced across all your devices.
-*   **Historical View:** Scroll through past entries with ease.
+*   **Infinite Scroll History:** Just scroll to view past entries.
 *   **Calendar Navigation:** Jump to any date instantly.
 *   **Secure Sign-In:** Email magic link and GitHub authentication.
 *   **Data Import/Export:** Easily import and export your entries via Markdown, using `---YYYY-MM-DD` as an entry separator.
