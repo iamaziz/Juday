@@ -1,15 +1,11 @@
 # Juday
 
+<a href="https://juday.vercel.app/" target="_blank" rel="noopener noreferrer">
+  <img src="https://deploy-badge.vercel.app/vercel/juday" alt="Vercel Badge"/>
+</a>
+
 <div align="center">
   <img src="public/Juday-logo.png" alt="Juday Logo" width="200"/>
-  <br/>
-  <a href="https://juday.vercel.app/" target="_blank" rel="noopener noreferrer">
-    <img src="https://deploy-badge.vercel.app/vercel/juday" alt="Vercel Badge"/>
-  </a>
-  <br/><br/>
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamaziz%2FJuday" target="_blank" rel="noopener noreferrer">
-    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
-  </a>
 </div>
 
 ## Juday... Just Today!
