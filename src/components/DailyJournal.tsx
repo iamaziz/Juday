@@ -10,14 +10,13 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Github, TextDirectionLtr } from "lucide-react";
+import { CalendarIcon, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
-import { Toggle } from "./ui/toggle";
 
 interface SheetItem {
   id: string;
@@ -37,7 +36,6 @@ export default function DailyJournal() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
-  const [textDirection, setTextDirection] = useState<'ltr' | 'rtl'>('ltr');
   
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -339,17 +337,6 @@ export default function DailyJournal() {
               </Button>
             </div>
           )}
-          {user && (
-            <Toggle
-              variant="outline"
-              aria-label="Toggle text direction"
-              pressed={textDirection === 'rtl'}
-              onPressedChange={(pressed) => setTextDirection(pressed ? 'rtl' : 'ltr')}
-              className="h-8 w-8"
-            >
-              <TextDirectionLtr className="h-4 w-4" />
-            </Toggle>
-          )}
           <ThemeSwitcher />
         </div>
       </header>
@@ -364,7 +351,6 @@ export default function DailyJournal() {
                   initialContent={currentDaySheet.content}
                   onContentChange={handleContentSave}
                   onFocusChange={setIsEditorFocused}
-                  textDirection={textDirection}
                 />
               </div>
             ) : (

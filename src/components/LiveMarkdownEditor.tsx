@@ -15,7 +15,6 @@ interface LiveMarkdownEditorProps {
   initialContent: string;
   onContentChange: (content: string) => void;
   onFocusChange?: (isFocused: boolean) => void;
-  textDirection: 'ltr' | 'rtl';
 }
 
 export default function LiveMarkdownEditor({
@@ -23,7 +22,6 @@ export default function LiveMarkdownEditor({
   initialContent,
   onContentChange,
   onFocusChange,
-  textDirection,
 }: LiveMarkdownEditorProps) {
   const supabase = createClient();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,7 +47,6 @@ export default function LiveMarkdownEditor({
     editorProps: {
       attributes: {
         class: "ProseMirror",
-        dir: textDirection,
       },
     },
     onUpdate: ({ editor }: { editor: EditorInstance }) => {
@@ -68,7 +65,7 @@ export default function LiveMarkdownEditor({
       onFocusChange?.(false);
     },
     immediatelyRender: false,
-  }, [textDirection]);
+  });
 
   // Effect to update editor content when initialContent prop changes (e.g., on date change)
   useEffect(() => {
