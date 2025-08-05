@@ -17,7 +17,7 @@ import HistoricalSheetItem from "./HistoricalSheetItem";
 import { useUserActivity } from "@/hooks/use-user-activity";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle } from "./ui/toggle";
 
 interface SheetItem {
   id: string;
