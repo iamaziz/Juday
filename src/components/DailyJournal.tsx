@@ -273,10 +273,10 @@ export default function DailyJournal() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col">
       <header className={cn(
-        "flex items-start justify-between px-4 py-4 bg-background transition-opacity duration-300",
-        isFocusModeActive && "opacity-5 pointer-events-none" // Apply low opacity and disable pointer events when focus mode is active
+        "sticky top-0 z-10 flex items-start justify-between px-4 py-4 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
+        isFocusModeActive && "opacity-5 pointer-events-none"
       )}>
         <div>
           <h1 className="text-4xl font-semibold relative">
@@ -341,29 +341,29 @@ export default function DailyJournal() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col p-4 overflow-y-auto">
+      <main>
         {user ? (
-          <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col">
-            {/* Editor Area - this div will grow to fill available space */}
-            <div className="flex-1">
-              {currentDaySheet ? (
-                <LiveMarkdownEditor
-                  sheetId={currentDaySheet.id}
-                  initialContent={currentDaySheet.content}
-                  onContentChange={handleContentSave}
-                  onFocusChange={setIsEditorFocused}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-muted-foreground text-center">
-                    No sheet available for this date. You can create one by typing if it's today or a future date.
-                  </p>
-                </div>
-              )}
-            </div>
+          <div className="w-full max-w-4xl mx-auto">
+            <section className="flex flex-col px-4 min-h-screen">
+              <div className="flex-1 flex flex-col pt-8 pb-16">
+                {currentDaySheet ? (
+                  <LiveMarkdownEditor
+                    sheetId={currentDaySheet.id}
+                    initialContent={currentDaySheet.content}
+                    onContentChange={handleContentSave}
+                    onFocusChange={setIsEditorFocused}
+                  />
+                ) : (
+                  <div className="h-full flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground text-center">
+                      No sheet available for this date. You can create one by typing if it's today or a future date.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
 
-            {/* Historical Sheets Area - this div will be pushed to the bottom */}
-            <div className="mt-auto pt-16">
+            <section className="px-4 pb-16">
               {loadedHistoricalSheets.length > 0 && (
                 <div className={cn(
                   "w-full space-y-8 transition-opacity duration-300",
@@ -402,10 +402,10 @@ export default function DailyJournal() {
                   isFocusModeActive && "opacity-5 pointer-events-none"
                 )}>No more historical sheets.</p>
               )}
-            </div>
+            </section>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center justify-center min-h-screen">
             <p className="text-muted-foreground">Sign in to start your daily journal.</p>
           </div>
         )}
