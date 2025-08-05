@@ -25,7 +25,7 @@ export async function exportAllData(): Promise<ExportResult> {
     .from('sheets')
     .select('title, content')
     .eq('user_id', user.id)
-    .order('title', { ascending: true });
+    .order('title', { ascending: false }); // Sort descending (newest to oldest)
 
   if (error) {
     console.error('Error fetching sheets for export:', error);
@@ -36,9 +36,10 @@ export async function exportAllData(): Promise<ExportResult> {
     return { error: 'No data found to export.' };
   }
 
+  // Add a newline after the separator and join with three newlines for better readability
   const formattedContent = sheets
-    .map(sheet => `---${sheet.title}\n${sheet.content || ''}`)
-    .join('\n\n');
+    .map(sheet => `---${sheet.title}\n\n${sheet.content || ''}`)
+    .join('\n\n\n');
 
   const timestamp = format(new Date(), 'yyyyMMdd-HHmm');
   const filename = `juday-data-${timestamp}.md`;
