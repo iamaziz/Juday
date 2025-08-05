@@ -343,9 +343,9 @@ export default function DailyJournal() {
 
       <main className="flex-1 flex flex-col items-center p-4 overflow-y-auto">
         {user ? (
-          <>
+          <div className="w-full max-w-4xl flex-1 flex flex-col">
             {currentDaySheet ? (
-              <div className="w-full max-w-4xl flex-1">
+              <div className="flex-1">
                 <LiveMarkdownEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
@@ -354,48 +354,54 @@ export default function DailyJournal() {
                 />
               </div>
             ) : (
-              <p className="text-muted-foreground mb-8">No sheet available for this date. You can create one by typing if it's today or a future date.</p>
-            )}
-
-            {loadedHistoricalSheets.length > 0 && (
-              <div className={cn(
-                "w-full max-w-4xl space-y-8 mt-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none"
-              )}>
-                {loadedHistoricalSheets.map((sheet) => (
-                  <HistoricalSheetItem key={sheet.id} sheet={sheet} />
-                ))}
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground text-center">
+                  No sheet available for this date. You can create one by typing if it's today or a future date.
+                </p>
               </div>
             )}
 
-            {hasMoreSheets && user && (
-              <div ref={ref} className={cn(
-                "flex justify-center py-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none"
-              )}>
-                {loading ? (
-                  <p className="text-muted-foreground">Loading more sheets...</p>
-                ) : (
-                  <Button
-                    onClick={() => {
-                      if (earliestLoadedDate) {
-                        fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
-                      }
-                    }}
-                    variant="outline"
-                  >
-                    Load More
-                  </Button>
-                )}
-              </div>
-            )}
-            {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
-              <p className={cn(
-                "text-muted-foreground py-8 transition-opacity duration-300",
-                isFocusModeActive && "opacity-5 pointer-events-none"
-              )}>No more historical sheets.</p>
-            )}
-          </>
+            <div className="mt-auto">
+              {loadedHistoricalSheets.length > 0 && (
+                <div className={cn(
+                  "w-full space-y-8 mt-8 transition-opacity duration-300",
+                  isFocusModeActive && "opacity-5 pointer-events-none"
+                )}>
+                  {loadedHistoricalSheets.map((sheet) => (
+                    <HistoricalSheetItem key={sheet.id} sheet={sheet} />
+                  ))}
+                </div>
+              )}
+
+              {hasMoreSheets && user && (
+                <div ref={ref} className={cn(
+                  "flex justify-center py-8 transition-opacity duration-300",
+                  isFocusModeActive && "opacity-5 pointer-events-none"
+                )}>
+                  {loading ? (
+                    <p className="text-muted-foreground">Loading more sheets...</p>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        if (earliestLoadedDate) {
+                          fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
+                        }
+                      }}
+                      variant="outline"
+                    >
+                      Load More
+                    </Button>
+                  )}
+                </div>
+              )}
+              {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
+                <p className={cn(
+                  "text-center text-muted-foreground py-8 transition-opacity duration-300",
+                  isFocusModeActive && "opacity-5 pointer-events-none"
+                )}>No more historical sheets.</p>
+              )}
+            </div>
+          </div>
         ) : (
           <p className="text-muted-foreground">Sign in to start your daily journal.</p>
         )}
