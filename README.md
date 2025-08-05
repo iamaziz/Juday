@@ -42,4 +42,4 @@ Open `http://localhost:3000` to view the app. The main page is `src/app/page.tsx
 
 ### Acknowledgement
 
-App is vibe-coded with [Dyad](https://github.com/dyad-sh/dyad).
+This app is built with [Dyad](https://github.com/dyad-sh/dyad) — 100% vibe-coded, 0% manually edited.
