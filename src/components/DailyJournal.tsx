@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Github, Download } from "lucide-react";
+import { CalendarIcon, Github, Download, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { exportAllData } from "@/app/actions";
+import { exportAllData, importAllData } from "@/app/actions";
 
 interface SheetItem {
   id: string;
@@ -44,6 +44,8 @@ export default function DailyJournal() {
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -298,6 +300,49 @@ export default function DailyJournal() {
     setIsExporting(false);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    toast.info("Starting data import...");
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      const result = await importAllData(content);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else if (result.success) {
+        const { importedCount = 0, skippedCount = 0 } = result;
+        toast.success(`Import complete!`, {
+          description: `${importedCount} new entries added. ${skippedCount} existing entries skipped. Page will now reload.`,
+          duration: 5000,
+        });
+        // Reload the page to reflect the changes
+        setTimeout(() => {
+          window.location.reload();
+        }, 5000);
+      } else {
+        toast.error("An unexpected error occurred during import.");
+      }
+      setIsImporting(false);
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read the selected file.");
+      setIsImporting(false);
+    };
+    reader.readAsText(file);
+
+    // Reset the file input value to allow re-uploading the same file
+    event.target.value = '';
+  };
+
   // Determine if focus mode should be active
   // Focus mode is active if user is idle OR if the editor is focused
   const isFocusModeActive = !isUserActive || isEditorFocused;
@@ -390,17 +435,37 @@ export default function DailyJournal() {
               </TooltipContent>
             </Tooltip>
             {user && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={handleExport} disabled={isExporting} variant="outline" size="icon" className="h-8 w-8">
-                    <Download className="h-4 w-4" />
-                    <span className="sr-only">Download All Data</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Download All Data</p>
-                </TooltipContent>
-              </Tooltip>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
+                      <Download className="h-4 w-4" />
+                      <span className="sr-only">Download All Data</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Download All Data</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleImportClick} disabled={isImporting || isExporting} variant="outline" size="icon" className="h-8 w-8">
+                      <Upload className="h-4 w-4" />
+                      <span className="sr-only">Import Data</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Import Data</p>
+                  </TooltipContent>
+                </Tooltip>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept=".md,.txt"
+                />
+              </>
             )}
             <ThemeSwitcher />
           </div>
