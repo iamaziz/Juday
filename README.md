@@ -19,7 +19,7 @@ Juday is a minimalist digital journal designed for ultimate focus and simplicity
 *   **Secure Authentication:** Sign in easily and securely with email (magic link) or your GitHub account.
 *   **Light & Dark Modes:** Choose the theme that's easiest on your eyes.
 
-For a reason to start using Juday, watch `Signal to Ratio` concept...
+For a reason to start using Juday, watch `Signal to Noise Ratio` here...
 
 <div align="center">
   <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
