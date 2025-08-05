@@ -2,6 +2,8 @@
 
 <div align="center">
   <img src="public/Juday-logo.png" alt="Juday Logo" width="200"/>
+  <br />
+  [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamaziz%2FJuday)
 </div>
 
 ## Juday... Just Today!
