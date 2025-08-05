@@ -8,6 +8,14 @@
 
 Juday is a minimalist digital journal designed for ultimate focus and simplicity. The core idea is to provide a clean, distraction-free space to concentrate on what matters most: **today**. By stripping away clutter and unnecessary features, Juday helps you capture your thoughts, tasks, and reflections for the present moment, fostering clarity and mindfulness.
 
+For some motivation to start using Juday, watch this video..
+
+<div align="center">
+  <a href="https://youtube.com/shorts/Rc15zJ9LJWI" target="_blank" rel="noopener noreferrer">
+    <img src="https://i.ytimg.com/vi/Rc15zJ9LJWI/hqdefault.jpg" alt="Juday Motivation Video" width="300"/>
+  </a>
+</div>
+
 ### Features
 
 *   **Effortless Daily Entry:** Automatically creates a new journal page for today. Just open the app and start typing.
