@@ -6,20 +6,20 @@
 
 ## Juday... Just Today!
 
-Juday is a minimalist digital journal designed for ultimate focus and simplicity. The core idea is to provide a clean, distraction-free space to concentrate on what matters most: **today**. By stripping away clutter and unnecessary features, Juday helps you capture your thoughts, tasks, and reflections for the present moment, fostering clarity and mindfulness.
+Juday is a minimalist digital journal designed to maximize your ***signal-to-noise ratio***. It provides a clean, distraction-free space to focus on what matters: **today**. Capture your thoughts, tasks, and reflections without the clutter.
 
 ### Features
 
-*   **Effortless Daily Entry:** Automatically creates a new journal page for today. Just open the app and start typing.
-*   **Distraction-Free Writing:** A clean, minimalist interface that fades away, letting you focus purely on your thoughts.
-*   **Rich Text with Markdown:** Format your notes with headers, lists, bold, italics, and more using simple Markdown syntax.
-*   **Seamless Autosave & Sync:** Your entries are saved automatically and synced in real-time across all your devices.
-*   **Explore Your Past:** Easily scroll through and review your entries from previous days in an infinite-scroll feed.
-*   **Calendar Navigation:** Jump to any specific date to view or edit your journal for that day.
-*   **Secure Authentication:** Sign in easily and securely with email (magic link) or your GitHub account.
-*   **Light & Dark Modes:** Choose the theme that's easiest on your eyes.
+*   **Effortless Daily Entry:** A new page for today, ready when you are.
+*   **Distraction-Free Writing:** A clean interface that lets you focus.
+*   **Markdown Support:** Format your notes with simple syntax.
+*   **Real-Time Sync:** Autosaved and synced across all your devices.
+*   **Historical View:** Scroll through past entries with ease.
+*   **Calendar Navigation:** Jump to any date instantly.
+*   **Secure Sign-In:** Email magic link and GitHub authentication.
+*   **Light & Dark Modes:** For your viewing comfort.
 
-For a reason to start using Juday, watch `Signal to Noise Ratio` here...
+Learn more about the core concept here:
 
 <div align="center">
   <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
