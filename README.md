@@ -32,6 +32,8 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
   </video>
 </div>
 
+[https://github.com/user-attachments/assets/7e280c10-8369-4d27-9ce1-0caed0498640](https://github.com/user-attachments/assets/b2e9828d-34d6-44e3-9741-aa6d79d71b4f)
+
 ### For Local Development
 
 ```bash
