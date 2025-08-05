@@ -29,19 +29,12 @@ For a reason to start using Juday, watch `Signal to Noise Ratio` here...
 
 ### For Local Development
 
-This is a [Next.js](https://nextjs.org) project. To get started, first install the dependencies:
-
 ```bash
 npm install
-```
-
-Then, run the development server:
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. You can start editing the main page by modifying `src/app/page.tsx`.
+Open `http://localhost:3000` to view the app. The main page is `src/app/page.tsx`.
 
 ### Acknowledgement
 
