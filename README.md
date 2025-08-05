@@ -8,14 +8,6 @@
 
 Juday is a minimalist digital journal designed for ultimate focus and simplicity. The core idea is to provide a clean, distraction-free space to concentrate on what matters most: **today**. By stripping away clutter and unnecessary features, Juday helps you capture your thoughts, tasks, and reflections for the present moment, fostering clarity and mindfulness.
 
-For a reason to start using Juday, watch `Signal to Ratio` concept...
-
-<div align="center">
-  <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
-    <img src="https://i.ytimg.com/vi/JvIPESv49Y8/hqdefault.jpg" alt="Juday Motivation Video" width="300"/>
-  </a>
-</div>
-
 ### Features
 
 *   **Effortless Daily Entry:** Automatically creates a new journal page for today. Just open the app and start typing.
@@ -26,6 +18,14 @@ For a reason to start using Juday, watch `Signal to Ratio` concept...
 *   **Calendar Navigation:** Jump to any specific date to view or edit your journal for that day.
 *   **Secure Authentication:** Sign in easily and securely with email (magic link) or your GitHub account.
 *   **Light & Dark Modes:** Choose the theme that's easiest on your eyes.
+
+For a reason to start using Juday, watch `Signal to Ratio` concept...
+
+<div align="center">
+  <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
+    <img src="https://i.ytimg.com/vi/JvIPESv49Y8/hqdefault.jpg" alt="Juday Motivation Video" width="300"/>
+  </a>
+</div>
 
 ### For Local Development
 
