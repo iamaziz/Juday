@@ -10,7 +10,7 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Github } from "lucide-react";
+import { CalendarIcon, Github, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
@@ -23,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { exportAllData } from "@/app/actions";
 
 interface SheetItem {
   id: string;
@@ -42,6 +43,7 @@ export default function DailyJournal() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [earliestLoadedDate, setEarliestLoadedDate] = useState<Date | null>(null);
   const [hasMoreSheets, setHasMoreSheets] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -266,6 +268,36 @@ export default function DailyJournal() {
     }
   }, [currentDaySheet, supabase]);
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    toast.info("Preparing your data for download...");
+
+    const result = await exportAllData();
+
+    if (result.error) {
+      toast.error(result.error);
+      setIsExporting(false);
+      return;
+    }
+
+    if (result.success && result.content && result.filename) {
+      const blob = new Blob([result.content], { type: 'text/markdown;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", result.filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("Your data has been downloaded!");
+    } else {
+      toast.error("An unexpected error occurred during export.");
+    }
+
+    setIsExporting(false);
+  };
+
   // Determine if focus mode should be active
   // Focus mode is active if user is idle OR if the editor is focused
   const isFocusModeActive = !isUserActive || isEditorFocused;
@@ -357,6 +389,19 @@ export default function DailyJournal() {
                 <p>View on GitHub</p>
               </TooltipContent>
             </Tooltip>
+            {user && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleExport} disabled={isExporting} variant="outline" size="icon" className="h-8 w-8">
+                    <Download className="h-4 w-4" />
+                    <span className="sr-only">Download All Data</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Download All Data</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             <ThemeSwitcher />
           </div>
         </header>
