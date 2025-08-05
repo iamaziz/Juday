@@ -341,30 +341,32 @@ export default function DailyJournal() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4 overflow-y-auto">
+      <main className="flex-1 flex flex-col p-4 overflow-y-auto">
         {user ? (
-          <div className="w-full max-w-4xl flex-1 flex flex-col">
-            {currentDaySheet ? (
-              <div className="flex-1">
+          <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col">
+            {/* Editor Area - this div will grow to fill available space */}
+            <div className="flex-1">
+              {currentDaySheet ? (
                 <LiveMarkdownEditor
                   sheetId={currentDaySheet.id}
                   initialContent={currentDaySheet.content}
                   onContentChange={handleContentSave}
                   onFocusChange={setIsEditorFocused}
                 />
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground text-center">
-                  No sheet available for this date. You can create one by typing if it's today or a future date.
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <p className="text-muted-foreground text-center">
+                    No sheet available for this date. You can create one by typing if it's today or a future date.
+                  </p>
+                </div>
+              )}
+            </div>
 
-            <div className="mt-auto">
+            {/* Historical Sheets Area - this div will be pushed to the bottom */}
+            <div className="mt-auto pt-16">
               {loadedHistoricalSheets.length > 0 && (
                 <div className={cn(
-                  "w-full space-y-8 mt-8 transition-opacity duration-300",
+                  "w-full space-y-8 transition-opacity duration-300",
                   isFocusModeActive && "opacity-5 pointer-events-none"
                 )}>
                   {loadedHistoricalSheets.map((sheet) => (
@@ -403,7 +405,9 @@ export default function DailyJournal() {
             </div>
           </div>
         ) : (
-          <p className="text-muted-foreground">Sign in to start your daily journal.</p>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground">Sign in to start your daily journal.</p>
+          </div>
         )}
       </main>
     </div>
