@@ -403,24 +403,7 @@ export default function DailyJournal() {
                   Sign Out
                 </Button>
               </>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-48 h-8 text-sm"
-                />
-                <Button onClick={handleSignIn} disabled={loading || !email} size="sm" className="h-8 px-3 text-sm">
-                  Sign In
-                </Button>
-                <Button onClick={handleGitHubSignIn} disabled={loading} variant="outline" size="sm" className="h-8 px-3 text-sm flex items-center">
-                  <Github className="mr-2 h-4 w-4" />
-                  GitHub
-                </Button>
-              </div>
-            )}
+            ) : null}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button asChild variant="outline" size="icon" className="h-8 w-8">
@@ -535,8 +518,57 @@ export default function DailyJournal() {
               </section>
             </div>
           ) : (
-            <div className="flex items-center justify-center min-h-screen">
-              <p className="text-muted-foreground">Sign in to start your daily journal.</p>
+            <div className="w-full max-w-5xl mx-auto px-4 py-8 md:py-16">
+              <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                <div className="space-y-4 text-center md:text-left">
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Juday... Just Today!</h2>
+                  <p className="text-lg text-muted-foreground">
+                    A minimalist digital journal to maximize your signal-to-noise ratio.
+                    Capture your thoughts, tasks, and reflections without the clutter.
+                  </p>
+                  <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 pt-4">
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-10 text-base"
+                    />
+                    <Button onClick={handleSignIn} disabled={loading || !email} size="lg" className="h-10">
+                      Sign In with Email
+                    </Button>
+                  </div>
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+                  <Button onClick={handleGitHubSignIn} disabled={loading} variant="outline" size="lg" className="w-full h-10">
+                    <Github className="mr-2 h-4 w-4" />
+                    Continue with GitHub
+                  </Button>
+                </div>
+                <div className="rounded-lg overflow-hidden shadow-2xl">
+                  <video
+                    key="demo-video"
+                    controls
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                    poster="/Juday-logo-simple.png"
+                    className="w-full h-full object-cover"
+                  >
+                    <source src="/juday-demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
             </div>
           )}
         </main>

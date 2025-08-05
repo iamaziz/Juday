@@ -23,12 +23,13 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
 *   🔒 **Secure Sign-In:** Log in with an email magic link or your GitHub account.
 *   ↔️ **Data Import/Export:** Easily import and export your entries via Markdown, using `---YYYY-MM-DD` as an entry separator.
 
-For a reason to start using Juday, watch this...
+### App Demo
 
 <div align="center">
-  <a href="https://youtube.com/shorts/JvIPESv49Y8" target="_blank" rel="noopener noreferrer">
-    <img src="https://i.ytimg.com/vi/JvIPESv49Y8/hqdefault.jpg" alt="Juday Motivation Video" width="300"/>
-  </a>
+  <video controls muted autoplay loop playsinline poster="public/Juday-logo-simple.png" style="width:100%; max-width:800px; border-radius: 12px; margin: 1rem 0;">
+    <source src="public/juday-demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 </div>
 
 ### For Local Development
