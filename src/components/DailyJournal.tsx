@@ -10,7 +10,7 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Github, Download, Upload } from "lucide-react";
+import { CalendarIcon, Github, Download, Upload, Menu, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
@@ -24,6 +24,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { exportAllData, importAllData } from "@/app/actions";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
+} from "@/components/ui/dropdown-menu";
 
 interface SheetItem {
   id: string;
@@ -49,6 +62,8 @@ export default function DailyJournal() {
   
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+  const isMobile = useIsMobile();
+  const { setTheme } = useTheme();
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -378,12 +393,17 @@ export default function DailyJournal() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[180px] justify-start text-left font-normal",
+                      "w-auto md:w-[180px] justify-start text-left font-normal",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                    {selectedDate ? (
+                      <>
+                        <span className="hidden md:inline">{format(selectedDate, "PPP")}</span>
+                        <span className="md:hidden">{format(selectedDate, "MMM d, yyyy")}</span>
+                      </>
+                    ) : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -396,61 +416,124 @@ export default function DailyJournal() {
                 </PopoverContent>
               </Popover>
             )}
-            {user ? (
+
+            {isMobile ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8">
+                    <Menu className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {user && (
+                    <>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent justify-center">
+                        <span className="text-sm text-muted-foreground">{user.email}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleImportClick} disabled={isImporting || isExporting}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        <span>Import Data</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExport} disabled={isExporting || isImporting}>
+                        <Download className="mr-2 h-4 w-4" />
+                        <span>Export Data</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <a href="https://github.com/iamaziz/Juday" target="_blank" rel="noopener noreferrer" className="w-full">
+                      <Github className="mr-2 h-4 w-4" />
+                      <span>GitHub</span>
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Sun className="h-4 w-4 mr-2 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                      <Moon className="absolute h-4 w-4 mr-2 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                      <span className="ml-2">Toggle Theme</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                  {user && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut} disabled={loading}>
+                        <span>Sign Out</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
               <>
-                <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
-                <Button onClick={handleSignOut} disabled={loading} size="sm" className="h-8 px-3 text-sm">
-                  Sign Out
-                </Button>
-              </>
-            ) : null}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button asChild variant="outline" size="icon" className="h-8 w-8">
-                  <a href="https://github.com/iamaziz/Juday" target="_blank" rel="noopener noreferrer">
-                    <Github className="h-4 w-4" />
-                    <span className="sr-only">View on GitHub</span>
-                  </a>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on GitHub</p>
-              </TooltipContent>
-            </Tooltip>
-            {user && (
-              <>
+                {user ? (
+                  <>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">Welcome, {user.email}</span>
+                    <Button onClick={handleSignOut} disabled={loading} size="sm" className="h-8 px-3 text-sm">
+                      Sign Out
+                    </Button>
+                  </>
+                ) : null}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
-                      <Download className="h-4 w-4" />
-                      <span className="sr-only">Download All Data</span>
+                    <Button asChild variant="outline" size="icon" className="h-8 w-8">
+                      <a href="https://github.com/iamaziz/Juday" target="_blank" rel="noopener noreferrer">
+                        <Github className="h-4 w-4" />
+                        <span className="sr-only">View on GitHub</span>
+                      </a>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Download All Data</p>
+                    <p>View on GitHub</p>
                   </TooltipContent>
                 </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button onClick={handleImportClick} disabled={isImporting || isExporting} variant="outline" size="icon" className="h-8 w-8">
-                      <Upload className="h-4 w-4" />
-                      <span className="sr-only">Import Data</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Import Data</p>
-                  </TooltipContent>
-                </Tooltip>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  accept=".md,.txt"
-                />
+                {user && (
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
+                          <Download className="h-4 w-4" />
+                          <span className="sr-only">Download All Data</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Download All Data</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={handleImportClick} disabled={isImporting || isExporting} variant="outline" size="icon" className="h-8 w-8">
+                          <Upload className="h-4 w-4" />
+                          <span className="sr-only">Import Data</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Import Data</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
+                )}
+                <ThemeSwitcher />
               </>
             )}
-            <ThemeSwitcher />
+            {user && (
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                accept=".md,.txt"
+              />
+            )}
           </div>
         </header>
 
