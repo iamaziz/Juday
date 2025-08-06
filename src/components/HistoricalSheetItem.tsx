@@ -4,6 +4,7 @@ import React from "react";
 import { useInView } from "react-intersection-observer";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 
@@ -42,7 +43,7 @@ export default function HistoricalSheetItem({ sheet }: HistoricalSheetItemProps)
       </h3>
       {/* Functional Fix: Removed ScrollArea to allow content to expand */}
       <div className="prose dark:prose-invert max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
           {sheet.content || "*No content for this day.*"}
         </ReactMarkdown>
       </div>
