@@ -393,17 +393,17 @@ export default function DailyJournal() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-auto md:w-[180px] justify-start text-left font-normal",
+                      "justify-start text-left font-normal",
+                      isMobile ? "h-8 w-8 p-0 justify-center" : "w-[180px]",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? (
-                      <>
-                        <span className="hidden md:inline">{format(selectedDate, "PPP")}</span>
-                        <span className="md:hidden">{format(selectedDate, "MMM d, yyyy")}</span>
-                      </>
-                    ) : <span>Pick a date</span>}
+                    <CalendarIcon className={cn("h-4 w-4", !isMobile && "mr-2")} />
+                    {!isMobile && (
+                      <span>
+                        {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                      </span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
