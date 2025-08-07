@@ -23,6 +23,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { exportAllData, importAllData } from "@/app/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
@@ -65,6 +73,7 @@ export default function DailyJournal() {
   
   const isOnline = useOnlineStatus();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [conflict, setConflict] = useState<{ sheetId: string; content: string } | null>(null);
 
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -180,7 +189,6 @@ export default function DailyJournal() {
     if (!rawData) return;
 
     const offlineData = JSON.parse(rawData);
-    // Only sync if the offline data belongs to the currently active sheet
     if (offlineData.sheetId !== currentDaySheet.id) {
       return;
     }
@@ -217,10 +225,10 @@ export default function DailyJournal() {
         localStorage.removeItem(OFFLINE_STORAGE_KEY);
         toast.success("Offline changes synced successfully!", { id: toastId });
       } else {
-        toast.warning("Sync Conflict", {
-          id: toastId,
-          description: "This entry was updated on another device. Your local changes were not synced to avoid overwriting data.",
-          duration: 10000,
+        toast.dismiss(toastId);
+        setConflict({
+          sheetId: offlineData.sheetId,
+          content: offlineData.content,
         });
       }
     } catch (error: any) {
@@ -276,7 +284,6 @@ export default function DailyJournal() {
       setHasMoreSheets(true);
 
       fetchOrCreateCurrentSheet(user.id, selectedDate);
-      // Fix: Pass selectedDate directly to fetch historical sheets to include the day before selectedDate
       fetchHistoricalSheets(user.id, selectedDate, SHEETS_PER_LOAD);
     } else if (!user) {
       setCurrentDaySheet(null);
@@ -323,7 +330,6 @@ export default function DailyJournal() {
       toast.error(error.message);
       setLoading(false);
     }
-    // On success, the page will redirect, so no need to set loading to false.
   };
 
   const handleSignOut = async () => {
@@ -432,7 +438,6 @@ export default function DailyJournal() {
           description: `${importedCount} new entries added. ${skippedCount} existing entries skipped. Page will now reload.`,
           duration: 5000,
         });
-        // Reload the page to reflect the changes
         setTimeout(() => {
           window.location.reload();
         }, 5000);
@@ -447,12 +452,44 @@ export default function DailyJournal() {
     };
     reader.readAsText(file);
 
-    // Reset the file input value to allow re-uploading the same file
     event.target.value = '';
   };
 
-  // Determine if focus mode should be active
-  // Focus mode is active if user is idle OR if the editor is focused
+  const handleResolveConflictKeepLocal = async () => {
+    if (!conflict) return;
+    const toastId = toast.loading("Overwriting server data with your local changes...");
+
+    const { error } = await supabase
+      .from("sheets")
+      .update({ content: conflict.content, updated_at: new Date().toISOString() })
+      .eq("id", conflict.sheetId);
+
+    if (error) {
+      toast.error(`Failed to save local changes: ${error.message}`, { id: toastId });
+    } else {
+      localStorage.removeItem(OFFLINE_STORAGE_KEY);
+      if (user && selectedDate) {
+        await fetchOrCreateCurrentSheet(user.id, selectedDate);
+      }
+      toast.success("Successfully saved your local changes to the server.", { id: toastId });
+    }
+    setConflict(null);
+  };
+
+  const handleResolveConflictUseServer = async () => {
+    if (!conflict) return;
+    const toastId = toast.loading("Discarding local changes and fetching server version...");
+
+    localStorage.removeItem(OFFLINE_STORAGE_KEY);
+
+    if (user && selectedDate && currentDaySheet?.id === conflict.sheetId) {
+      await fetchOrCreateCurrentSheet(user.id, selectedDate);
+    }
+
+    toast.success("Successfully loaded server version.", { id: toastId });
+    setConflict(null);
+  };
+
   const isFocusModeActive = !isUserActive || isEditorFocused;
 
   if (loading && !user) {
@@ -766,6 +803,36 @@ export default function DailyJournal() {
           )}
         </main>
       </div>
+      <AlertDialog open={!!conflict}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sync Conflict</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                Your notes for this day were updated on another device. Please choose which version to keep.
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto text-left">
+                  <div className="p-2 border rounded-md">
+                    <h4 className="font-bold mb-2 text-foreground">Your Local (Offline) Changes</h4>
+                    <pre className="text-xs whitespace-pre-wrap font-sans bg-muted/50 p-2 rounded">{conflict?.content}</pre>
+                  </div>
+                  <div className="p-2 border rounded-md">
+                    <h4 className="font-bold mb-2 text-foreground">Current Server Changes</h4>
+                    <pre className="text-xs whitespace-pre-wrap font-sans bg-muted/50 p-2 rounded">{currentDaySheet?.content}</pre>
+                  </div>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={handleResolveConflictUseServer}>
+              Discard Local & Use Server
+            </Button>
+            <Button onClick={handleResolveConflictKeepLocal}>
+              Keep My Local Changes
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }
