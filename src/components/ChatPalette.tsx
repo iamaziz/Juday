@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useChat } from "ai/react";
+import { useChat, type Message } from "ai/react";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ interface ChatPaletteProps {
 export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) {
   const { messages, input, handleInputChange, handleSubmit, isLoading, error, setMessages } = useChat({
     api: "/api/chat",
-    onError: (err) => {
+    onError: (err: Error) => {
       // The useChat hook will set the error state, which we display below.
       // No need for a toast here as the UI provides clear feedback.
     },
@@ -69,7 +69,7 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
                 <p className="text-xs mt-2">e.g., "What did I work on last week?" or "Summarize my entry from May 15th."</p>
               </div>
             )}
-            {messages.map((m) => (
+            {messages.map((m: Message) => (
               <div
                 key={m.id}
                 className={cn(
