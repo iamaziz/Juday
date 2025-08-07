@@ -37,6 +37,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 
 interface SheetItem {
   id: string;
@@ -45,6 +46,8 @@ interface SheetItem {
   created_at: string;
   updated_at: string;
 }
+
+const OFFLINE_STORAGE_KEY = "juday-offline-sheet";
 
 export default function DailyJournal() {
   const supabase = createClient();
@@ -60,6 +63,9 @@ export default function DailyJournal() {
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const isOnline = useOnlineStatus();
+  const [isSyncing, setIsSyncing] = useState(false);
+
   const isUserActive = useUserActivity();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const isMobile = useIsMobile();
@@ -167,6 +173,71 @@ export default function DailyJournal() {
     setLoading(false);
   }, [supabase]);
 
+  const syncOfflineData = useCallback(async () => {
+    if (isSyncing || !user || !currentDaySheet) return;
+
+    const rawData = localStorage.getItem(OFFLINE_STORAGE_KEY);
+    if (!rawData) return;
+
+    const offlineData = JSON.parse(rawData);
+    // Only sync if the offline data belongs to the currently active sheet
+    if (offlineData.sheetId !== currentDaySheet.id) {
+      return;
+    }
+
+    setIsSyncing(true);
+    const toastId = toast.loading("Syncing offline changes...");
+
+    try {
+      const { sheetId, content: offlineContent, updated_at: offlineTimestamp } = offlineData;
+
+      const { data: serverSheet, error: fetchError } = await supabase
+        .from("sheets")
+        .select("updated_at")
+        .eq("id", sheetId)
+        .single();
+
+      if (fetchError) {
+        throw new Error(`Failed to check for conflicts: ${fetchError.message}`);
+      }
+
+      const serverTimestamp = new Date(serverSheet.updated_at).getTime();
+      const localTimestamp = new Date(offlineTimestamp).getTime();
+
+      if (localTimestamp > serverTimestamp) {
+        const { error: updateError } = await supabase
+          .from("sheets")
+          .update({ content: offlineContent, updated_at: offlineTimestamp })
+          .eq("id", sheetId);
+
+        if (updateError) {
+          throw new Error(`Failed to sync data: ${updateError.message}`);
+        }
+
+        localStorage.removeItem(OFFLINE_STORAGE_KEY);
+        toast.success("Offline changes synced successfully!", { id: toastId });
+      } else {
+        toast.warning("Sync Conflict", {
+          id: toastId,
+          description: "This entry was updated on another device. Your local changes were not synced to avoid overwriting data.",
+          duration: 10000,
+        });
+      }
+    } catch (error: any) {
+      console.error("Sync failed:", error);
+      toast.error(`Sync failed: ${error.message}`, { id: toastId });
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [supabase, isSyncing, user, currentDaySheet]);
+
+  // Effect to trigger sync when coming online
+  useEffect(() => {
+    if (isOnline) {
+      syncOfflineData();
+    }
+  }, [isOnline, syncOfflineData]);
+
   // Effect 1: Handle initial user load and auth state changes
   useEffect(() => {
     let isMounted = true;
@@ -271,19 +342,41 @@ export default function DailyJournal() {
 
   const handleContentSave = useCallback(async (newContent: string) => {
     if (!currentDaySheet) return;
-    const { error } = await supabase
-      .from("sheets")
-      .update({ content: newContent, updated_at: new Date().toISOString() })
-      .eq("id", currentDaySheet.id);
 
-    if (error) {
-      console.error("Failed to auto-save content:", error);
-      toast.error(`Failed to auto-save: ${error.message}`);
+    const offlineData = {
+      sheetId: currentDaySheet.id,
+      content: newContent,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (isOnline) {
+      try {
+        const { error } = await supabase
+          .from("sheets")
+          .update({ content: newContent, updated_at: new Date().toISOString() })
+          .eq("id", currentDaySheet.id);
+
+        if (error) throw error;
+
+        const rawOfflineData = localStorage.getItem(OFFLINE_STORAGE_KEY);
+        if (rawOfflineData) {
+          const storedData = JSON.parse(rawOfflineData);
+          if (storedData.sheetId === currentDaySheet.id) {
+            localStorage.removeItem(OFFLINE_STORAGE_KEY);
+          }
+        }
+      } catch (error: any) {
+        console.error("Failed to save to Supabase, saving locally:", error);
+        toast.warning("Connection issue. Changes saved locally.", {
+          description: "They will be synced when you're back online.",
+        });
+        localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(offlineData));
+      }
     } else {
-      // Optionally, show a subtle success or update a status indicator
-      // toast.success("Content auto-saved!", { duration: 1000 });
+      toast.info("You are offline. Changes saved locally.");
+      localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(offlineData));
     }
-  }, [currentDaySheet, supabase]);
+  }, [currentDaySheet, supabase, isOnline]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -463,6 +556,13 @@ export default function DailyJournal() {
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
                   </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled>
+                    <div className="flex items-center w-full">
+                      <div className={cn("w-2.5 h-2.5 rounded-full mr-2", isOnline ? "bg-green-500" : "bg-red-500")} />
+                      <span className="text-xs">{isOnline ? "Online" : "Offline - Changes saved"}</span>
+                    </div>
+                  </DropdownMenuItem>
                   {user && (
                     <>
                       <DropdownMenuSeparator />
@@ -523,6 +623,16 @@ export default function DailyJournal() {
                   </>
                 )}
                 <ThemeSwitcher />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div role="status" className="flex items-center justify-center h-8 w-8">
+                      <div className={cn("w-3 h-3 rounded-full", isOnline ? "bg-green-500" : "bg-red-500")} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isOnline ? "Online" : "Offline - Changes saved locally"}</p>
+                  </TooltipContent>
+                </Tooltip>
               </>
             )}
             {user && (
