@@ -18,7 +18,7 @@ Juday is a minimalist digital journal designed to maximize your ***signal-to-noi
 *   ✨ **Distraction-Free Writing:** A clean interface that lets you focus.
 *   Ⓜ️ **Markdown Support:** Format your notes with simple syntax.
 *   🔄 **Real-Time Sync:** Autosaved and synced across all your devices.
-*   💾 **Offline Editing:** Continue writing even without an internet connection. Your changes will be saved locally and synced automatically when you're back online.
+*   💾 **Robust Offline Editing:** Continue writing even without an internet connection. Your changes are saved locally and synced automatically when you're back online, with smart conflict resolution to prevent data loss.
 *   📜 **Infinite Scroll History:** Just scroll to view past entries.
 *   📅 **Calendar Navigation:** Jump to any date instantly.
 *   🔒 **Secure Sign-In:** Log in with an email magic link or your GitHub account.
