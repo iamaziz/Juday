@@ -10,7 +10,7 @@ import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Github, Download, Upload, Menu, Sun, Moon } from "lucide-react";
+import { CalendarIcon, Github, Download, Upload, Menu, Sun, Moon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import HistoricalSheetItem from "./HistoricalSheetItem";
@@ -46,6 +46,7 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import ChatPalette from "./ChatPalette";
 
 interface SheetItem {
   id: string;
@@ -79,6 +80,7 @@ export default function DailyJournal() {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
   const isMobile = useIsMobile();
   const { setTheme } = useTheme();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -298,6 +300,19 @@ export default function DailyJournal() {
       fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
     }
   }, [inView, hasMoreSheets, loading, user, earliestLoadedDate, fetchHistoricalSheets]);
+
+  // Effect for keyboard shortcut to open chat
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsChatOpen((open) => !open);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
 
   const handleSignIn = async () => {
@@ -562,6 +577,10 @@ export default function DailyJournal() {
                         <span className="text-sm text-muted-foreground">{user.email}</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setIsChatOpen(true)}>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        <span>Chat with Journal</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleImportClick} disabled={isImporting || isExporting}>
                         <Upload className="mr-2 h-4 w-4" />
                         <span>Import Data</span>
@@ -635,6 +654,17 @@ export default function DailyJournal() {
                 </Tooltip>
                 {user && (
                   <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={() => setIsChatOpen(true)} variant="outline" size="icon" className="h-8 w-8">
+                          <Sparkles className="h-4 w-4" />
+                          <span className="sr-only">Chat with Journal</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Chat with Journal (Cmd+K)</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
@@ -812,6 +842,7 @@ export default function DailyJournal() {
           )}
         </main>
       </div>
+      {user && <ChatPalette isOpen={isChatOpen} onOpenChange={setIsChatOpen} />}
       <AlertDialog open={!!conflict}>
         <AlertDialogContent>
           <AlertDialogHeader>
