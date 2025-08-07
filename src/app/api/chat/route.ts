@@ -62,7 +62,7 @@ Now, please answer the user's question based on their journal.`
 
     // 5. Call the local LLM with the prepared context and user messages
     const response = await ollama.chat.completions.create({
-      model: process.env.OLLAMA_MODEL || 'llama3', // The model to use
+      model: process.env.OLLAMA_MODEL || 'qwen3:latest', // The model to use
       stream: true,
       messages: [systemPrompt, ...messages],
     });
