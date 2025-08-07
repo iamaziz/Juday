@@ -74,7 +74,8 @@
     "typescript": "^5"
   },
   "scripts": {
-    "dev": "next dev",
+    "web-dev": "next dev",
+    "dev": "tauri dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
