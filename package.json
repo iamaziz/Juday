@@ -1,13 +1,11 @@
 {
-  "name": "juday",
-  "version": "0.1.0",
-  "private": true,
   "scripts": {
-    "dev": "tauri dev",
-    "build": "tauri build",
-    "next:dev": "next dev",
-    "next:build": "next build",
-    "next:start": "next start"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "tauri": "tauri",
+    "build:tauri": "cross-env IS_TAURI=true next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -49,6 +47,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "cross-env": "^7.0.3",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",

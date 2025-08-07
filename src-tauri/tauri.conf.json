@@ -1,7 +1,7 @@
 {
   "build": {
-    "beforeDevCommand": "npm run next:dev",
-    "beforeBuildCommand": "npm run next:build",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build:tauri",
     "devPath": "http://localhost:3000",
     "distDir": "../out",
     "withGlobalTauri": true
