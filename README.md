@@ -10,7 +10,7 @@
 
 ## Juday... Just Today!
 
-Juday is a minimalist digital journal designed to maximize your ***signal-to-noise ratio***. It provides a clean, distraction-free space to focus on what matters: **today**. Capture your thoughts, tasks, and reflections without the clutter.
+Juday is a minimalist digital journal designed to maximize your [***signal-to-noise ratio***](https://www.youtube.com/shorts/JvIPESv49Y8). It provides a clean, distraction-free space to focus on what matters: **today**. Capture your thoughts, tasks, and reflections without the clutter.
 
 ### Features
 

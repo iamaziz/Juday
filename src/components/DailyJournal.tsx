@@ -753,8 +753,17 @@ export default function DailyJournal() {
                 <div className="space-y-4 text-center md:text-left">
                   <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Juday... Just Today!</h2>
                   <p className="text-lg text-muted-foreground">
-                    A minimalist digital journal to maximize your signal-to-noise ratio.
-                    Capture your thoughts, tasks, and reflections without the clutter.
+                    A minimalist digital journal to maximize your{" "}
+                    <a
+                      href="https://www.youtube.com/shorts/JvIPESv49Y8"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      signal-to-noise ratio
+                    </a>
+                    . Capture your thoughts, tasks, and reflections without the
+                    clutter.
                   </p>
                   <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 pt-4">
                     <Input
