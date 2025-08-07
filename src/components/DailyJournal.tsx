@@ -57,6 +57,7 @@ interface SheetItem {
 }
 
 const OFFLINE_STORAGE_KEY = "juday-offline-sheet";
+const IS_TAURI_BUILD = process.env.NEXT_PUBLIC_IS_TAURI === 'true';
 
 export default function DailyJournal() {
   const supabase = createClient();
@@ -303,6 +304,8 @@ export default function DailyJournal() {
 
   // Effect for keyboard shortcut to open chat
   useEffect(() => {
+    if (IS_TAURI_BUILD) return; // Disable chat shortcut in desktop app
+
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -400,6 +403,10 @@ export default function DailyJournal() {
   }, [currentDaySheet, supabase, isOnline]);
 
   const handleExport = async () => {
+    if (IS_TAURI_BUILD) {
+      toast.error("Export is not available in the desktop app.");
+      return;
+    }
     setIsExporting(true);
     toast.info("Preparing your data for download...");
 
@@ -430,6 +437,10 @@ export default function DailyJournal() {
   };
 
   const handleImportClick = () => {
+    if (IS_TAURI_BUILD) {
+      toast.error("Import is not available in the desktop app.");
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -571,7 +582,7 @@ export default function DailyJournal() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {user && (
+                  {user && !IS_TAURI_BUILD && (
                     <>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent justify-center">
                         <span className="text-sm text-muted-foreground">{user.email}</span>
@@ -652,7 +663,7 @@ export default function DailyJournal() {
                     <p>View on GitHub</p>
                   </TooltipContent>
                 </Tooltip>
-                {user && (
+                {user && !IS_TAURI_BUILD && (
                   <>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -702,7 +713,7 @@ export default function DailyJournal() {
                 </Tooltip>
               </>
             )}
-            {user && (
+            {user && !IS_TAURI_BUILD && (
               <input
                 type="file"
                 ref={fileInputRef}
@@ -842,7 +853,7 @@ export default function DailyJournal() {
           )}
         </main>
       </div>
-      {user && <ChatPalette isOpen={isChatOpen} onOpenChange={setIsChatOpen} />}
+      {user && !IS_TAURI_BUILD && <ChatPalette isOpen={isChatOpen} onOpenChange={setIsChatOpen} />}
       <AlertDialog open={!!conflict}>
         <AlertDialogContent>
           <AlertDialogHeader>
