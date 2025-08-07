@@ -1,4 +1,14 @@
 {
+  "name": "juday",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "next:dev": "next dev",
+    "next:build": "next build",
+    "next:start": "next start"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -72,13 +82,5 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  },
-  "scripts": {
-    "web-dev": "next dev",
-    "dev": "tauri dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "tauri": "tauri"
   }
 }
