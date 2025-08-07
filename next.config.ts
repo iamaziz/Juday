@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export', // Required for Tauri static builds
   webpack: (config) => {
     if (process.env.NODE_ENV === "development") {
       config.module.rules.push({
