@@ -18,7 +18,7 @@ interface ImportResult {
 }
 
 export async function exportAllData(): Promise<ExportResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -57,7 +57,7 @@ export async function exportAllData(): Promise<ExportResult> {
 }
 
 export async function importAllData(fileContent: string): Promise<ImportResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 

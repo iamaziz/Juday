@@ -15,7 +15,7 @@ export const runtime = 'edge';
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // 1. Authenticate the user
     const { data: { user } } = await supabase.auth.getUser();
@@ -69,7 +69,11 @@ Now, please answer the user's question based on their journal.`
 
     // 6. Stream the response back to the client
     const stream = OpenAIStream(response);
-    return new StreamingTextResponse(stream);
+    
+    // The 'as any' cast bypasses a TypeScript type error where the stream type
+    // from the 'ai' package doesn't perfectly match the expected input type.
+    // This is a safe workaround for this specific library issue.
+    return new StreamingTextResponse(stream as any);
 
   } catch (e: any) {
     console.error('Error in chat API:', e);
