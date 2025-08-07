@@ -68,12 +68,11 @@ Now, please answer the user's question based on their journal.`
     });
 
     // 6. Stream the response back to the client
-    const stream = OpenAIStream(response);
+    // The 'as any' cast is a workaround for a TypeScript type mismatch between the
+    // OpenAI-compatible stream and the type expected by the 'ai' package.
+    const stream = OpenAIStream(response as any);
     
-    // The 'as any' cast bypasses a TypeScript type error where the stream type
-    // from the 'ai' package doesn't perfectly match the expected input type.
-    // This is a safe workaround for this specific library issue.
-    return new StreamingTextResponse(stream as any);
+    return new StreamingTextResponse(stream);
 
   } catch (e: any) {
     console.error('Error in chat API:', e);
