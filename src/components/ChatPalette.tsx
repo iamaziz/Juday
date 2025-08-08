@@ -71,6 +71,14 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
   const messagePairs = groupMessages(messages);
   const reversedPairs = [...messagePairs].reverse(); // Show newest at the top
 
+  // Function to correct AI's non-standard LaTeX delimiters
+  const formatAssistantContent = (content: string) => {
+    // This regex finds text wrapped in `[ ... ]` and replaces it with `$$...$$`
+    // It's designed to catch the specific non-standard block format the AI is using.
+    const blockRegex = /\[\s*([\s\S]*?)\s*\]/g;
+    return content.replace(blockRegex, (_match, group1) => `$$${group1}$$`);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl h-[70vh] flex flex-col p-0 gap-0 bg-background/80 backdrop-blur-sm border shadow-2xl">
@@ -130,7 +138,7 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
                           remarkPlugins={[remarkGfm, remarkMath]}
                           rehypePlugins={[rehypeKatex]}
                         >
-                          {pair.assistant.content}
+                          {formatAssistantContent(pair.assistant.content)}
                         </ReactMarkdown>
                       </div>
                     ) : isLoading ? (
