@@ -44,13 +44,14 @@ export async function POST(req: Request) {
       .map(sheet => `--- Entry Date: ${sheet.title} ---\n\n${sheet.content || 'No content for this day.'}`)
       .join('\n\n\n');
 
-    // 4. Construct the system prompt
+    // 4. Construct the system prompt with specific instructions for math formatting
     const systemPrompt = {
       role: 'system',
       content: `You are a helpful AI assistant named Juday integrated into a digital journal. Your purpose is to help the user reflect on their past entries.
 - The user's complete journal is provided below, with each entry separated by its date.
 - Base your answers *only* on the information contained within these journal entries.
 - If the user asks a question that cannot be answered from their journal, politely state that the information is not available in their notes.
+- When writing mathematical formulas, use LaTeX syntax. For block-level formulas, wrap them in double dollar signs (\`$$\`). For inline formulas, wrap them in single dollar signs (\`$\`).
 - Be concise and helpful.
 
 Here is the user's journal:
