@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, Send, User, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 interface ChatPaletteProps {
   isOpen: boolean;
@@ -123,7 +126,12 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
                   <div className="w-full">
                     {pair.assistant ? (
                       <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
-                        <ReactMarkdown>{pair.assistant.content}</ReactMarkdown>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                        >
+                          {pair.assistant.content}
+                        </ReactMarkdown>
                       </div>
                     ) : isLoading ? (
                       <div className="flex items-center gap-2 text-muted-foreground">
