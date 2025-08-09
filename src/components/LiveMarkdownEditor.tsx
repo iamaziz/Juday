@@ -10,8 +10,8 @@ import TaskItem from "@tiptap/extension-task-item";
 import { createClient } from "@/lib/supabase/client";
 import EditorToolbar from "./EditorToolbar";
 
-// Deriving the Editor type from the useEditor hook's return type
-type EditorInstance = NonNullable<ReturnType<typeof useEditor>>;
+// Deriving the Editor type from the useEditor hook's return type and exporting it
+export type EditorInstance = NonNullable<ReturnType<typeof useEditor>>;
 
 interface LiveMarkdownEditorProps {
   sheetId: string;

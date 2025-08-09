@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import type { Editor } from "@tiptap/core";
 import { BubbleMenu } from "@tiptap/react";
 import {
   Bold,
@@ -22,9 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import type { EditorInstance } from "./LiveMarkdownEditor";
 
 interface EditorToolbarProps {
-  editor: Editor | null;
+  editor: EditorInstance | null;
 }
 
 export default function EditorToolbar({ editor }: EditorToolbarProps) {
