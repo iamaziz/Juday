@@ -8,6 +8,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import { createClient } from "@/lib/supabase/client";
+import EditorToolbar from "./EditorToolbar";
 
 // Deriving the Editor type from the useEditor hook's return type
 type EditorInstance = NonNullable<ReturnType<typeof useEditor>>;
@@ -44,8 +45,8 @@ export default function LiveMarkdownEditor({
         linkify: true,
         breaks: true,
       }),
-      TaskList, // Add TaskList extension
-      TaskItem.configure({ // Add TaskItem extension
+      TaskList,
+      TaskItem.configure({
         nested: true,
       }),
       Placeholder.configure({
@@ -129,5 +130,10 @@ export default function LiveMarkdownEditor({
     };
   }, []);
 
-  return <EditorContent editor={editor} className="h-full" />;
+  return (
+    <>
+      <EditorToolbar editor={editor} />
+      <EditorContent editor={editor} className="h-full" />
+    </>
+  );
 }
