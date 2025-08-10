@@ -7,6 +7,7 @@ import { defaultKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useTheme } from 'next-themes';
+import { livePreviewPlugin } from './codemirror/live-preview-plugin';
 
 interface CodeMirrorEditorProps {
   initialContent: string;
@@ -51,6 +52,16 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   },
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent',
+  },
+  // Live Preview Styles
+  '.cm-strong-emphasis': {
+    fontWeight: 'bold',
+  },
+  '.cm-emphasis': {
+    fontStyle: 'italic',
+  },
+  '.cm-strikethrough': {
+    textDecoration: 'line-through',
   }
 });
 
@@ -76,6 +87,7 @@ export default function CodeMirrorEditor({
           codeLanguages: languages,
         }),
         getEditorTheme(theme),
+        livePreviewPlugin, // Add our new plugin here
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
