@@ -34,7 +34,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     lineHeight: '1.7',
   },
   '.cm-line': {
-    padding: '0 2px',
+    padding: '0 2rem', // Add horizontal padding to lines
   },
   '.cm-focused': {
     outline: 'none',
@@ -52,9 +52,10 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   // Live Preview Styles
   '.cm-live-strong': { fontWeight: 'bold' },
   '.cm-live-em': { fontStyle: 'italic' },
-  '.cm-live-strikethrough': { textDecoration: 'line-through' },
 
   '.cm-live-header': {
+    display: 'inline-block',
+    width: '100%',
     fontWeight: 'bold',
     lineHeight: '1.25',
   },
@@ -65,37 +66,32 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-live-header-5': { fontSize: '1.1em', marginTop: '1em', marginBottom: '0.4em' },
   '.cm-live-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))', marginTop: '1em', marginBottom: '0.4em' },
 
-  '.cm-live-blockquote': {
-    fontStyle: 'italic',
-    borderLeft: '3px solid hsl(var(--border))',
-    paddingLeft: '0.8rem',
+  // Widget Styles
+  '.cm-live-task-marker': {
+    display: 'inline-block',
+    marginRight: '0.5em',
+    verticalAlign: 'middle',
+  },
+  '.cm-live-task-marker input': {
+    width: '1em',
+    height: '1em',
+    cursor: 'pointer',
+  },
+  '.cm-live-task-checked .cm-line': {
+    textDecoration: 'line-through',
     color: 'hsl(var(--muted-foreground))',
   },
-
-  // List styling
-  '.cm-list-item-line': {
-    position: 'relative',
-    paddingLeft: '1.5rem',
-    lineHeight: '1.5', // Tighter line-height for list items
-  },
-  '.cm-ul-list-item::before': {
-    content: "'•'",
+  '.cm-live-bullet, .cm-live-number': {
+    display: 'inline-block',
     position: 'absolute',
     left: '0.5rem',
     color: 'hsl(var(--muted-foreground))',
+    pointerEvents: 'none',
   },
-  '.cm-ol-list-item': {
-    counterReset: 'list-counter', // This is tricky with line-based decorations
-  },
-  '.cm-ol-list-item::before': {
-    content: 'counter(list-counter) "."', // This might not work as expected due to CM's rendering
-    position: 'absolute',
-    left: '0',
-    width: '1.2rem',
+  '.cm-live-number': {
     textAlign: 'right',
-    marginRight: '0.3rem',
-    color: 'hsl(var(--muted-foreground))',
-  },
+    width: '1.2rem',
+  }
 });
 
 export default function CodeMirrorEditor({
@@ -134,6 +130,7 @@ export default function CodeMirrorEditor({
             }, 1000);
           }
         }),
+        EditorView.lineWrapping,
       ],
     });
 
