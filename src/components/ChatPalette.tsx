@@ -5,6 +5,8 @@ import { useChat, type Message } from "ai/react";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -104,6 +106,9 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 gap-0 bg-background/90 backdrop-blur-sm border shadow-2xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Chat with Journal</DialogTitle>
+        </DialogHeader>
         <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg">
           <ResizablePanel defaultSize={30} minSize={20} maxSize={40}>
             <ChatHistorySidebar
