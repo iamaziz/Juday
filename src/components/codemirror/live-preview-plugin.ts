@@ -65,10 +65,14 @@ class HrWidget extends WidgetType {
 
 // --- PLUGIN ---
 
-function isCursorOnLine(view: EditorView, from: number, to: number): boolean {
-  const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
-  const line = view.state.doc.lineAt(from);
-  return selectionFrom >= line.from && selectionTo <= line.to;
+/**
+ * Checks if the user's selection is currently overlapping with a given syntax node.
+ * This is used to disable live preview for the element being edited.
+ */
+function isNodeActive(view: EditorView, from: number, to: number): boolean {
+    const { from: selFrom, to: selTo } = view.state.selection.main;
+    // Check if the selection range overlaps with the node's range.
+    return selTo >= from && selFrom <= to;
 }
 
 const livePreviewPluginInstance = ViewPlugin.fromClass(
@@ -93,9 +97,9 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
           from,
           to,
           enter: (node) => {
-            const cursorOnLine = isCursorOnLine(view, node.from, node.to);
+            const nodeIsActive = isNodeActive(view, node.from, node.to);
 
-            if (cursorOnLine) return;
+            if (nodeIsActive) return;
 
             if (node.name.startsWith("ATXHeading")) {
               const level = parseInt(node.name.replace("ATXHeading", ""), 10);
