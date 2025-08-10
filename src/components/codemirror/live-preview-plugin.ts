@@ -17,7 +17,7 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const builder = new RangeSetBuilder<Decoration>();
+      const decorationsToAdd: { from: number; to: number; spec: Decoration }[] = [];
       const { from, to } = view.state.selection.main;
 
       syntaxTree(view.state).iterate({
@@ -27,49 +27,51 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
           // Bold: **text**
           if (node.name.includes("StrongEmphasis")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 2, Decoration.replace({}));
+              decorationsToAdd.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorationsToAdd.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
             }
-            builder.add(
-              node.from + 2,
-              node.to - 2,
-              Decoration.mark({ class: "cm-strong-emphasis" })
-            );
-            if (!isCursorInside) {
-              builder.add(node.to - 2, node.to, Decoration.replace({}));
-            }
+            decorationsToAdd.push({
+              from: node.from + 2,
+              to: node.to - 2,
+              spec: Decoration.mark({ class: "cm-strong-emphasis" }),
+            });
           }
 
           // Italic: *text* or _text_
           if (node.name.includes("Emphasis")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 1, Decoration.replace({}));
+              decorationsToAdd.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
+              decorationsToAdd.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
             }
-            builder.add(
-              node.from + 1,
-              node.to - 1,
-              Decoration.mark({ class: "cm-emphasis" })
-            );
-            if (!isCursorInside) {
-              builder.add(node.to - 1, node.to, Decoration.replace({}));
-            }
+            decorationsToAdd.push({
+              from: node.from + 1,
+              to: node.to - 1,
+              spec: Decoration.mark({ class: "cm-emphasis" }),
+            });
           }
 
           // Strikethrough: ~~text~~
           if (node.name.includes("Strikethrough")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 2, Decoration.replace({}));
+              decorationsToAdd.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorationsToAdd.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
             }
-            builder.add(
-              node.from + 2,
-              node.to - 2,
-              Decoration.mark({ class: "cm-strikethrough" })
-            );
-            if (!isCursorInside) {
-              builder.add(node.to - 2, node.to, Decoration.replace({}));
-            }
+            decorationsToAdd.push({
+              from: node.from + 2,
+              to: node.to - 2,
+              spec: Decoration.mark({ class: "cm-strikethrough" }),
+            });
           }
         },
       });
+
+      // Sort decorations by their 'from' position before adding to the builder
+      decorationsToAdd.sort((a, b) => a.from - b.from);
+
+      const builder = new RangeSetBuilder<Decoration>();
+      for (const { from, to, spec } of decorationsToAdd) {
+        builder.add(from, to, spec);
+      }
 
       return builder.finish();
     }
