@@ -47,7 +47,7 @@ const obsidianHighlightStyle = HighlightStyle.define([
   { 
     tag: t.meta, 
     color: 'hsl(var(--muted-foreground))', 
-    opacity: 0.6 
+    opacity: 0.4 // Reduced opacity to make markers more subtle
   },
 ]);
 
