@@ -1,4 +1,13 @@
 {
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "tauri": "tauri",
+    "tauri:dev": "cross-env IS_TAURI=true next dev",
+    "tauri:build": "cross-env IS_TAURI=true next build"
+  },
   "dependencies": {
     "@codemirror/commands": "^6.6.0",
     "@codemirror/lang-markdown": "^6.2.5",
