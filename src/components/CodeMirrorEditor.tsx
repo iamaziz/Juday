@@ -81,13 +81,13 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     padding: '0.1rem 0.3rem',
     borderRadius: '0.25rem',
   },
-  '.cm-hr-widget': {
-    width: '100%',
-    borderTop: '2px solid hsl(var(--border))',
-    margin: '1em 0',
-  },
-  '.cm-list-item': {
-    paddingLeft: '0.5rem', /* Indent list items slightly */
+  // Styles for fenced code blocks. Applied to each line inside the block.
+  '.cm-codeblock': {
+    fontFamily: 'var(--font-geist-mono)',
+    backgroundColor: 'hsl(var(--muted))',
+    color: 'hsl(var(--muted-foreground))',
+    paddingLeft: '1rem',
+    paddingRight: '1rem',
   },
   '.cm-task-marker': {
     marginRight: '0.5em',

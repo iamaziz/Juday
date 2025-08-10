@@ -1,15 +1,6 @@
-import { EditorView, ViewPlugin, Decoration, ViewUpdate, WidgetType } from "@codemirror/view";
+import { EditorView, ViewPlugin, Decoration, ViewUpdate } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
-
-class HorizontalRuleWidget extends WidgetType {
-  toDOM() {
-    const hr = document.createElement("hr");
-    hr.className = "cm-hr-widget";
-    return hr;
-  }
-  ignoreEvent() { return false; }
-}
 
 const livePreviewPluginInstance = ViewPlugin.fromClass(
   class {
@@ -26,7 +17,7 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const decorations: { from: number, to: number, spec: Decoration }[] = [];
+      const builder = new RangeSetBuilder<Decoration>();
       const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
 
       for (const { from, to } of view.visibleRanges) {
@@ -42,85 +33,53 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
               if (["StrongEmphasis", "Emphasis", "Strikethrough"].includes(parentName)) {
                 const isParentCursorInside = selectionFrom >= node.node.parent.from && selectionTo <= node.node.parent.to;
                 if (!isParentCursorInside) {
-                  decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({}) });
+                  builder.add(node.from, node.to, Decoration.replace({}));
                 }
               }
             }
 
-            // Headings
-            if (node.name.startsWith("Header")) {
-              if (!isCursorInside) {
-                const headerMark = node.node.getChild("HeaderMark");
-                if (headerMark) {
-                  decorations.push({ from: headerMark.from, to: headerMark.to, spec: Decoration.replace({}) });
-                }
-              }
-            }
-            
-            // Blockquotes
-            if (node.name === "Blockquote") {
-              if (!isCursorInside) {
-                node.node.getChildren("QuoteMark").forEach(mark => {
-                  decorations.push({ from: mark.from, to: mark.to, spec: Decoration.replace({}) });
-                });
-              }
-            }
-
-            // Lists
-            if (node.name === "ListItem") {
-              if (!isCursorInside) {
-                const listMark = node.node.getChild("ListMark");
-                if (listMark) {
-                  decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
-                }
-              }
-            }
-
-            // Horizontal Rules
-            if (node.name === "HorizontalRule") {
-              if (!isCursorInside) {
-                decorations.push({
-                  from: node.from,
-                  to: node.to,
-                  spec: Decoration.widget({ widget: new HorizontalRuleWidget(), block: true, side: -1 })
-                });
+            // Headings, Blockquotes, Lists
+            if (["HeaderMark", "QuoteMark", "ListMark"].includes(node.name)) {
+              const line = view.state.doc.lineAt(node.from);
+              const isCursorOnLine = selectionFrom >= line.from && selectionTo <= line.to;
+              if (!isCursorOnLine) {
+                builder.add(node.from, node.to, Decoration.replace({}));
               }
             }
 
             // Links
-            if (node.name === "Link") {
-              if (!isCursorInside) {
-                // Hide [ and ]
-                decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
-                const linkTextEnd = node.node.getChild("LinkText")?.to ?? node.from + 1;
-                decorations.push({ from: linkTextEnd, to: linkTextEnd + 1, spec: Decoration.replace({}) });
-                
-                // Hide (url)
-                const urlPartStart = node.node.getChild("LinkMark")?.from ?? linkTextEnd + 1;
-                decorations.push({ from: urlPartStart, to: node.to, spec: Decoration.replace({}) });
-              }
+            if (node.name === "Link" && !isCursorInside) {
+              builder.add(node.from, node.from + 1, Decoration.replace({})); // Hide [
+              const linkTextEnd = node.node.getChild("LinkText")?.to ?? node.from + 1;
+              builder.add(linkTextEnd, linkTextEnd + 1, Decoration.replace({})); // Hide ]
+              const urlPartStart = node.node.getChild("LinkMark")?.from ?? linkTextEnd + 1;
+              builder.add(urlPartStart, node.to, Decoration.replace({})); // Hide (url)
             }
 
             // Inline Code
-            if (node.name === "InlineCode") {
-              if (!isCursorInside) {
-                // Hide backticks
-                decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
-                decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+            if (node.name === "InlineCode" && !isCursorInside) {
+              builder.add(node.from, node.from + 1, Decoration.replace({})); // Hide `
+              builder.add(node.to - 1, node.to, Decoration.replace({})); // Hide `
+            }
+
+            // Fenced Code Blocks
+            if (node.name === "FencedCode" && !isCursorInside) {
+              const startMark = node.node.getChild("CodeMark");
+              const endMark = node.node.lastChild;
+              if (startMark) {
+                builder.add(startMark.from, startMark.to, Decoration.replace({}));
+              }
+              if (endMark && endMark.name === "CodeMark") {
+                builder.add(endMark.from, endMark.to, Decoration.replace({}));
+              }
+              const info = node.node.getChild("CodeInfo");
+              if (info) {
+                builder.add(info.from, info.to, Decoration.replace({}));
               }
             }
           },
         });
       }
-
-      // Sort decorations by their 'from' position to prevent crashes
-      decorations.sort((a, b) => a.from - b.from);
-
-      const builder = new RangeSetBuilder<Decoration>();
-      for (const { from, to, spec } of decorations) {
-        builder.add(from, to, spec);
-      }
-
       return builder.finish();
     }
   },
