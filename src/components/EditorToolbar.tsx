@@ -66,6 +66,24 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
           strategy: 'fixed',
         },
       }}
+      // This is the key fix.
+      // It prevents the menu from trying to render while the editor is being destroyed,
+      // which resolves the race condition with React's unmounting process.
+      shouldShow={({ editor }) => {
+        // Don't show if the editor is being destroyed.
+        if (editor.isDestroyed) {
+          return false;
+        }
+
+        // Don't show if there is no selection.
+        const { from, to } = editor.state.selection;
+        if (from === to) {
+          return false;
+        }
+        
+        // Only show if the editor is focused.
+        return editor.isFocused;
+      }}
       className="flex items-center gap-1 p-1 bg-background border rounded-lg shadow-md"
     >
       <Popover>
