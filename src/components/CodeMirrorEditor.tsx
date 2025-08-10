@@ -8,6 +8,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useTheme } from 'next-themes';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+import { lineStylingPlugin } from './codemirror/line-styling-plugin';
 
 interface CodeMirrorEditorProps {
   initialContent: string;
@@ -15,7 +16,7 @@ interface CodeMirrorEditorProps {
   onFocusChange?: (isFocused: boolean) => void;
 }
 
-const getEditorTheme = (theme: string | undefined) => EditorView.theme({
+const getObsidianLikeTheme = (theme: string | undefined) => EditorView.theme({
   // Base styles
   '&': {
     color: 'hsl(var(--foreground))',
@@ -48,40 +49,96 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-activeLine': {
     backgroundColor: 'transparent',
   },
-  
-  // Syntax Highlighting Styles
   '.cm-gutters': {
     backgroundColor: 'hsl(var(--background))',
     border: 'none',
   },
-  '.cm-lineNumbers .cm-gutterElement': {
+
+  // --- Syntax Highlighting & Styling ---
+
+  // De-emphasize markdown formatting characters
+  '& .cm-formatting, & .cm-formatting-link, & .cm-formatting-list, & .cm-formatting-quote': {
+    color: 'hsl(var(--muted-foreground))',
+    opacity: 0.8,
+    fontWeight: 'normal',
+  },
+  '& .cm-formatting-heading': {
+    color: 'hsl(var(--muted-foreground))',
+    opacity: 0.6,
+    fontWeight: 'bold',
+  },
+
+  // Headers
+  '& .cm-header': {
+    fontWeight: 'bold',
+  },
+  '& .cm-header-1': { fontSize: '2em' },
+  '& .cm-header-2': { fontSize: '1.7em' },
+  '& .cm-header-3': { fontSize: '1.4em' },
+  '& .cm-header-4': { fontSize: '1.2em' },
+  '& .cm-header-5': { fontSize: '1.1em' },
+  '& .cm-header-6': { fontSize: '1.0em' },
+
+  // Emphasis
+  '& .cm-emphasis': {
+    fontStyle: 'italic',
+  },
+  '& .cm-strong': {
+    fontWeight: 'bold',
+  },
+  '& .cm-strikethrough': {
+    textDecoration: 'line-through',
+  },
+
+  // Links
+  '& .cm-link': {
+    color: 'hsl(var(--primary))',
+    textDecoration: 'underline',
+    textDecorationColor: 'hsl(var(--primary) / 0.5)',
+  },
+  '& .cm-url': {
+    color: 'hsl(var(--muted-foreground))',
+    opacity: 0.8,
+  },
+
+  // Blockquotes (line style added by plugin)
+  '& .cm-quote': {
+    fontStyle: 'italic',
     color: 'hsl(var(--muted-foreground))',
   },
-  '.cm-activeLineGutter': {
-    backgroundColor: 'hsl(var(--accent))',
+  '& .cm-styled-quote-line': {
+    borderLeft: '3px solid hsl(var(--accent))',
+    paddingLeft: '1rem !important', // Override the default line padding
   },
-  '.cm-keyword': { color: 'hsl(var(--primary))', opacity: 0.8 },
-  '.cm-atom': { color: '#66f' },
-  '.cm-number': { color: '#f07' },
-  '.cm-string': { color: '#0a8' },
-  '.cm-meta': { color: '#555' },
-  '.cm-variable-2, .cm-variable-3, .cm-type': { color: '#085' },
-  '.cm-property': { color: '#05a' },
-  '.cm-operator': { color: 'hsl(var(--primary))' },
-  '.cm-comment': { color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' },
-  '.cm-link': { color: '#20f', textDecoration: 'underline' },
-  '.cm-url': { color: '#20f' },
-  '.cm-strong': { fontWeight: 'bold' },
-  '.cm-emphasis': { fontStyle: 'italic' },
-  '.cm-strikethrough': { textDecoration: 'line-through' },
-  '.cm-heading': { fontWeight: 'bold', color: 'hsl(var(--foreground))' },
-  '.cm-quote': { color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' },
-  '.cm-monospace': {
+
+  // Code
+  '& .cm-inline-code, & .cm-code-block': {
     fontFamily: 'var(--font-geist-mono)',
     backgroundColor: 'hsl(var(--muted))',
     color: 'hsl(var(--muted-foreground))',
     padding: '0.1em 0.3em',
-    borderRadius: '0.25rem',
+    borderRadius: '4px',
+  },
+  '& .cm-formatting-code': {
+    backgroundColor: 'hsl(var(--muted) / 0.5)',
+  },
+
+  // Horizontal Rule
+  '& .cm-hr': {
+    display: 'block',
+    border: 'none',
+    borderTop: '2px solid hsl(var(--accent))',
+    margin: '1em 0',
+    height: '0',
+  },
+
+  // Task Lists (line style added by plugin)
+  '& .cm-task-marker': {
+    fontFamily: 'var(--font-geist-mono)',
+  },
+  '& .cm-styled-task-line-checked': {
+    textDecoration: 'line-through',
+    color: 'hsl(var(--muted-foreground))',
   },
 });
 
@@ -106,8 +163,9 @@ export default function CodeMirrorEditor({
           base: markdownLanguage,
           codeLanguages: languages,
         }),
-        getEditorTheme(theme),
+        getObsidianLikeTheme(theme),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        lineStylingPlugin,
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
