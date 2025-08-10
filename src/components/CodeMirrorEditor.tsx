@@ -7,7 +7,7 @@ import { defaultKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useTheme } from 'next-themes';
-import { livePreviewPlugin } from './codemirror/live-preview-plugin';
+import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 
 interface CodeMirrorEditorProps {
   initialContent: string;
@@ -49,85 +49,40 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     backgroundColor: 'transparent',
   },
   
-  // Live Preview Styles
-  '.cm-live-strong': { fontWeight: 'bold' },
-  '.cm-live-em': { fontStyle: 'italic' },
-  '.cm-live-strikethrough': { textDecoration: 'line-through' },
-
-  '.cm-live-header': {
-    display: 'inline-block',
-    width: '100%',
-    fontWeight: 'bold',
-    lineHeight: '1.25',
+  // Syntax Highlighting Styles
+  '.cm-gutters': {
+    backgroundColor: 'hsl(var(--background))',
+    border: 'none',
   },
-  '.cm-live-header-1': { fontSize: '2em', marginTop: '1em', marginBottom: '0.4em' },
-  '.cm-live-header-2': { fontSize: '1.75em', marginTop: '1em', marginBottom: '0.4em' },
-  '.cm-live-header-3': { fontSize: '1.5em', marginTop: '1em', marginBottom: '0.4em' },
-  '.cm-live-header-4': { fontSize: '1.25em', marginTop: '1em', marginBottom: '0.4em' },
-  '.cm-live-header-5': { fontSize: '1.1em', marginTop: '1em', marginBottom: '0.4em' },
-  '.cm-live-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))', marginTop: '1em', marginBottom: '0.4em' },
-
-  '.cm-live-blockquote': {
-    borderLeft: '3px solid hsl(var(--border))',
-    paddingLeft: '1rem !important',
+  '.cm-lineNumbers .cm-gutterElement': {
     color: 'hsl(var(--muted-foreground))',
-    fontStyle: 'italic',
   },
-
-  '.cm-live-codeblock': {
-    display: 'block',
-    fontFamily: 'var(--font-geist-mono)',
-    backgroundColor: 'hsl(var(--muted))',
-    color: 'hsl(var(--muted-foreground))',
-    padding: '1rem',
-    borderRadius: '0.5rem',
-    margin: '0.5rem 0',
-    whiteSpace: 'pre-wrap',
+  '.cm-activeLineGutter': {
+    backgroundColor: 'hsl(var(--accent))',
   },
-
-  '.cm-live-inline-code': {
+  '.cm-keyword': { color: 'hsl(var(--primary))', opacity: 0.8 },
+  '.cm-atom': { color: '#66f' },
+  '.cm-number': { color: '#f07' },
+  '.cm-string': { color: '#0a8' },
+  '.cm-meta': { color: '#555' },
+  '.cm-variable-2, .cm-variable-3, .cm-type': { color: '#085' },
+  '.cm-property': { color: '#05a' },
+  '.cm-operator': { color: 'hsl(var(--primary))' },
+  '.cm-comment': { color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' },
+  '.cm-link': { color: '#20f', textDecoration: 'underline' },
+  '.cm-url': { color: '#20f' },
+  '.cm-strong': { fontWeight: 'bold' },
+  '.cm-emphasis': { fontStyle: 'italic' },
+  '.cm-strikethrough': { textDecoration: 'line-through' },
+  '.cm-heading': { fontWeight: 'bold', color: 'hsl(var(--foreground))' },
+  '.cm-quote': { color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' },
+  '.cm-monospace': {
     fontFamily: 'var(--font-geist-mono)',
     backgroundColor: 'hsl(var(--muted))',
     color: 'hsl(var(--muted-foreground))',
     padding: '0.1em 0.3em',
     borderRadius: '0.25rem',
   },
-
-  // Widget Styles
-  '.cm-live-hr-container': {
-    width: '100%',
-    padding: '1rem 0',
-  },
-  '.cm-live-hr-container hr': {
-    border: 'none',
-    borderTop: '2px solid hsl(var(--border))',
-    margin: 0,
-  },
-  '.cm-live-task-marker': {
-    display: 'inline-block',
-    marginRight: '0.5em',
-    verticalAlign: 'middle',
-  },
-  '.cm-live-task-marker input': {
-    width: '1em',
-    height: '1em',
-    cursor: 'pointer',
-  },
-  '.cm-live-task-checked .cm-line': {
-    textDecoration: 'line-through',
-    color: 'hsl(var(--muted-foreground))',
-  },
-  '.cm-live-bullet, .cm-live-number': {
-    display: 'inline-block',
-    position: 'absolute',
-    left: '0.5rem',
-    color: 'hsl(var(--muted-foreground))',
-    pointerEvents: 'none',
-  },
-  '.cm-live-number': {
-    textAlign: 'right',
-    width: '1.2rem',
-  }
 });
 
 export default function CodeMirrorEditor({
@@ -152,7 +107,7 @@ export default function CodeMirrorEditor({
           codeLanguages: languages,
         }),
         getEditorTheme(theme),
-        livePreviewPlugin,
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
