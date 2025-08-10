@@ -15,8 +15,9 @@ interface CodeMirrorEditorProps {
   onFocusChange?: (isFocused: boolean) => void;
 }
 
-// Basic CodeMirror theme to match the app's look and feel
+// Expanded CodeMirror theme for a richer "Obsidian-like" live preview
 const getEditorTheme = (theme: string | undefined) => EditorView.theme({
+  // Base styles
   '&': {
     color: 'hsl(var(--foreground))',
     backgroundColor: 'hsl(var(--background))',
@@ -28,11 +29,6 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-content': {
     caretColor: 'hsl(var(--foreground))',
     padding: '2rem 0',
-  },
-  '.cm-gutters': {
-    backgroundColor: 'hsl(var(--background))',
-    color: 'hsl(var(--muted-foreground))',
-    border: 'none',
   },
   '.cm-scroller': {
     fontFamily: 'inherit',
@@ -50,10 +46,8 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-activeLine': {
     backgroundColor: 'transparent',
   },
-  '.cm-activeLineGutter': {
-    backgroundColor: 'transparent',
-  },
-  // Use standard markdown classes provided by @codemirror/lang-markdown
+  
+  // Markdown-specific styles
   '.cm-strong': {
     fontWeight: 'bold',
   },
@@ -62,6 +56,45 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   },
   '.cm-strikethrough': {
     textDecoration: 'line-through',
+  },
+  '.cm-header-1': { fontSize: '2rem', fontWeight: 'bold', lineHeight: '1.2' },
+  '.cm-header-2': { fontSize: '1.75rem', fontWeight: 'bold', lineHeight: '1.2' },
+  '.cm-header-3': { fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1.2' },
+  '.cm-header-4': { fontSize: '1.25rem', fontWeight: 'bold', lineHeight: '1.2' },
+  '.cm-header-5': { fontSize: '1.1rem', fontWeight: 'bold', lineHeight: '1.2' },
+  '.cm-header-6': { fontSize: '1rem', fontWeight: 'bold', color: 'hsl(var(--muted-foreground))', lineHeight: '1.2' },
+  '.cm-quote': {
+    fontStyle: 'italic',
+    borderLeft: '3px solid hsl(var(--border))',
+    paddingLeft: '0.8rem',
+    color: 'hsl(var(--muted-foreground))',
+  },
+  '.cm-link': {
+    color: 'hsl(var(--primary))',
+    textDecoration: 'underline',
+    textUnderlineOffset: '2px',
+  },
+  '.cm-inline-code': {
+    fontFamily: 'var(--font-geist-mono)',
+    backgroundColor: 'hsl(var(--muted))',
+    color: 'hsl(var(--muted-foreground))',
+    padding: '0.1rem 0.3rem',
+    borderRadius: '0.25rem',
+  },
+  '.cm-hr-widget': {
+    width: '100%',
+    borderTop: '2px solid hsl(var(--border))',
+    margin: '1em 0',
+  },
+  '.cm-list-item': {
+    paddingLeft: '0.5rem', /* Indent list items slightly */
+  },
+  '.cm-task-marker': {
+    marginRight: '0.5em',
+  },
+  '.cm-task-checked .cm-line': {
+    textDecoration: 'line-through',
+    color: 'hsl(var(--muted-foreground))',
   }
 });
 
@@ -87,7 +120,7 @@ export default function CodeMirrorEditor({
           codeLanguages: languages,
         }),
         getEditorTheme(theme),
-        livePreviewPlugin, // Add our new plugin here
+        livePreviewPlugin,
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
@@ -118,7 +151,6 @@ export default function CodeMirrorEditor({
       view.destroy();
       viewRef.current = null;
     };
-  // We only want this to run once on mount, content updates are handled by the next effect.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme]);
 
