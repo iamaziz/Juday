@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
-import { defaultKeymap } from '@codemirror/commands';
+import { defaultKeymap, indentWithTab } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useTheme } from 'next-themes';
@@ -42,6 +42,11 @@ const obsidianHighlightStyle = HighlightStyle.define([
   
   // Horizontal Rule
   { tag: t.contentSeparator, display: 'block', border: 'none', borderTop: '2px solid hsl(var(--accent))', margin: '1em 0', height: '0' },
+
+  // HTML Tags
+  { tag: t.tagName, color: 'hsl(var(--primary))', fontWeight: 'bold' },
+  { tag: t.attributeName, color: 'hsl(var(--accent-foreground))' },
+  { tag: t.attributeValue, color: 'hsl(var(--muted-foreground))' },
 
   // De-emphasize all markdown formatting characters (meta tags)
   { 
@@ -116,7 +121,7 @@ export default function CodeMirrorEditor({
     const startState = EditorState.create({
       doc: initialContent,
       extensions: [
-        keymap.of([...defaultKeymap]),
+        keymap.of([...defaultKeymap, indentWithTab]),
         markdown({
           base: markdownLanguage,
           codeLanguages: languages,
