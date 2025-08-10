@@ -14,12 +14,7 @@ import {
 } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Separator } from "@/components/ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import type { EditorInstance } from "./LiveMarkdownEditor";
 
@@ -73,26 +68,29 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       }}
       className="flex items-center gap-1 p-1 bg-background border rounded-lg shadow-md"
     >
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <Popover>
+        <PopoverTrigger asChild>
           <Button variant="ghost" size="sm" className="w-32 justify-between">
             <span>{activeTextStyle?.name || "Style"}</span>
             <ChevronDown className="h-4 w-4" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent sideOffset={5} sticky="always">
-          {textStyleOptions.map((style) => (
-            <DropdownMenuItem
-              key={style.name}
-              onClick={style.command}
-              className={style.isActive() ? "is-active" : ""}
-            >
-              <style.icon className="mr-2 h-4 w-4" />
-              {style.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverTrigger>
+        <PopoverContent className="w-48 p-1" sideOffset={5}>
+          <div className="flex flex-col">
+            {textStyleOptions.map((style) => (
+              <Button
+                key={style.name}
+                variant="ghost"
+                onClick={style.command}
+                className={`w-full justify-start ${style.isActive() ? "is-active bg-accent" : ""}`}
+              >
+                <style.icon className="mr-2 h-4 w-4" />
+                {style.name}
+              </Button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       <Separator orientation="vertical" className="h-6" />
 
