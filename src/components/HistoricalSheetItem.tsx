@@ -22,8 +22,8 @@ interface HistoricalSheetItemProps {
 
 export default function HistoricalSheetItem({ sheet }: HistoricalSheetItemProps) {
   const { ref, inView } = useInView({
-    threshold: 0.5, // An item is "in view" when 50% of it is visible
-    triggerOnce: false,
+    threshold: 0.1, // Trigger when 10% of the item is visible for a more responsive feel
+    triggerOnce: true, // Animate in once and then stay visible, fixing the initialization bug
   });
 
   return (
