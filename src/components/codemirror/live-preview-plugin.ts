@@ -85,7 +85,7 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const builder = new RangeSetBuilder<Decoration>();
+      const decorations: { from: number, to: number, spec: any }[] = [];
 
       for (const { from, to } of view.visibleRanges) {
         syntaxTree(view.state).iterate({
@@ -98,37 +98,37 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
 
             if (node.name.startsWith("ATXHeading")) {
               const level = parseInt(node.name.replace("ATXHeading", ""), 10);
-              builder.add(node.from, node.from + level + 1, Decoration.replace({}));
-              builder.add(node.from + level + 1, node.to, Decoration.mark({ class: `cm-live-header cm-live-header-${level}` }));
+              decorations.push({ from: node.from, to: node.from + level + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + level + 1, to: node.to, spec: Decoration.mark({ class: `cm-live-header cm-live-header-${level}` }) });
             }
             else if (node.name === "Emphasis") {
-              builder.add(node.from, node.from + 1, Decoration.replace({}));
-              builder.add(node.to - 1, node.to, Decoration.replace({}));
-              builder.add(node.from + 1, node.to - 1, Decoration.mark({ class: "cm-live-em" }));
+              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-em" }) });
             }
             else if (node.name === "StrongEmphasis") {
-              builder.add(node.from, node.from + 2, Decoration.replace({}));
-              builder.add(node.to - 2, node.to, Decoration.replace({}));
-              builder.add(node.from + 2, node.to - 2, Decoration.mark({ class: "cm-live-strong" }));
+              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strong" }) });
             }
             else if (node.name === "Strikethrough") {
-              builder.add(node.from, node.from + 2, Decoration.replace({}));
-              builder.add(node.to - 2, node.to, Decoration.replace({}));
-              builder.add(node.from + 2, node.to - 2, Decoration.mark({ class: "cm-live-strikethrough" }));
+              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strikethrough" }) });
             }
             else if (node.name === "Blockquote") {
-              builder.add(node.from, node.to, Decoration.line({ attributes: { class: "cm-live-blockquote" } }));
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-blockquote" } }) });
             }
             else if (node.name === "HorizontalRule") {
-              builder.add(node.from, node.to, Decoration.replace({ widget: new HrWidget() }));
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({ widget: new HrWidget() }) });
             }
             else if (node.name === "FencedCode") {
-              builder.add(node.from, node.to, Decoration.mark({ class: "cm-live-codeblock" }));
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.mark({ class: "cm-live-codeblock" }) });
             }
             else if (node.name === "InlineCode") {
-              builder.add(node.from, node.from + 1, Decoration.replace({}));
-              builder.add(node.to - 1, node.to, Decoration.replace({}));
-              builder.add(node.from + 1, node.to - 1, Decoration.mark({ class: "cm-live-inline-code" }));
+              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-inline-code" }) });
             }
             else if (node.name === "Task") {
               const isChecked = view.state.doc.sliceString(node.from, node.to).includes("[x]");
@@ -140,23 +140,23 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
                     changes: { from: taskMarkerNode.from, to: taskMarkerNode.to, insert: newMarker }
                   });
                 };
-                builder.add(taskMarkerNode.from, taskMarkerNode.to, Decoration.replace({ widget: new CheckboxWidget(isChecked, onToggle) }));
+                decorations.push({ from: taskMarkerNode.from, to: taskMarkerNode.to, spec: Decoration.replace({ widget: new CheckboxWidget(isChecked, onToggle) }) });
               }
               if (isChecked) {
-                builder.add(node.from, node.to, Decoration.line({ attributes: { class: "cm-live-task-checked" } }));
+                decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-task-checked" } }) });
               }
               const listMark = node.node.parent?.firstChild;
               if (listMark && listMark.name === "ListMark") {
-                builder.add(listMark.from, listMark.to, Decoration.replace({}));
+                decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
               }
             }
             else if (node.name === "ListItem" && node.node.firstChild?.name !== "Task") {
               const listMark = node.node.firstChild;
               if (listMark) {
-                builder.add(listMark.from, listMark.to, Decoration.replace({}));
+                decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
               }
               if (node.node.parent?.name === "BulletList") {
-                builder.add(node.from, node.from, Decoration.widget({ widget: new BulletWidget(), side: -1 }));
+                decorations.push({ from: node.from, to: node.from, spec: Decoration.widget({ widget: new BulletWidget(), side: -1 }) });
               } else if (node.node.parent?.name === "OrderedList") {
                 let count = 1;
                 let current = node.node.prevSibling;
@@ -164,11 +164,18 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
                     if (current.name === "ListItem") count++;
                     current = current.prevSibling;
                 }
-                builder.add(node.from, node.from, Decoration.widget({ widget: new NumberWidget(count), side: -1 }));
+                decorations.push({ from: node.from, to: node.from, spec: Decoration.widget({ widget: new NumberWidget(count), side: -1 }) });
               }
             }
           },
         });
+      }
+
+      decorations.sort((a, b) => a.from - b.from);
+
+      const builder = new RangeSetBuilder<Decoration>();
+      for (const { from, to, spec } of decorations) {
+        builder.add(from, to, spec);
       }
 
       return builder.finish();
