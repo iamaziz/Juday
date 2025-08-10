@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes';
 import { HighlightStyle, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 import { lineStylingPlugin } from './codemirror/line-styling-plugin';
+import { toggleBold, toggleItalic } from './codemirror/commands';
 
 interface CodeMirrorEditorProps {
   initialContent: string;
@@ -121,7 +122,12 @@ export default function CodeMirrorEditor({
     const startState = EditorState.create({
       doc: initialContent,
       extensions: [
-        keymap.of([...defaultKeymap, indentWithTab]),
+        keymap.of([
+          ...defaultKeymap, 
+          indentWithTab,
+          { key: "Mod-b", run: toggleBold },
+          { key: "Mod-i", run: toggleItalic },
+        ]),
         markdown({
           base: markdownLanguage,
           codeLanguages: languages,
