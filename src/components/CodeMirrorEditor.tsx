@@ -72,7 +72,8 @@ const getEditorFrameTheme = () => EditorView.theme({
   '.cm-line': {
     padding: '0 2rem',
   },
-  '.cm-focused': {
+  // This selector specifically targets the editor's root element when focused.
+  '&.cm-focused': {
     outline: 'none',
   },
   '.cm-cursor, .cm-dropCursor': {
