@@ -98,7 +98,7 @@ export default function ChatHistory({ onSwitchToChat }: ChatHistoryProps) {
   return (
     <>
       <div className="flex flex-col h-full">
-        <div className="p-4 pr-2 border-b flex justify-between items-center">
+        <div className="p-4 pr-12 border-b flex justify-between items-center">
           <h3 className="font-semibold text-lg">Chat History</h3>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onSwitchToChat}>
