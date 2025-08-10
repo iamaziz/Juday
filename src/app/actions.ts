@@ -189,3 +189,56 @@ export async function getChatMessages(sessionId: string): Promise<{ role: string
 
   return data;
 }
+
+export async function deleteChatSession(sessionId: string): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('chat_sessions')
+    .select('id')
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (sessionError || !sessionData) {
+    return { error: 'Session not found or access denied.' };
+  }
+
+  const { error: deleteError } = await supabase
+    .from('chat_sessions')
+    .delete()
+    .eq('id', sessionId);
+
+  if (deleteError) {
+    console.error('Error deleting chat session:', deleteError);
+    return { error: deleteError.message };
+  }
+
+  return { success: true };
+}
+
+export async function clearAllChatHistory(): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  const { error: deleteError } = await supabase
+    .from('chat_sessions')
+    .delete()
+    .eq('user_id', user.id);
+
+  if (deleteError) {
+    console.error('Error clearing all chat history:', deleteError);
+    return { error: deleteError.message };
+  }
+
+  return { success: true };
+}
