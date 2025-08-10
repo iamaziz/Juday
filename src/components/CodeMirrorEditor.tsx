@@ -69,7 +69,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
 
   '.cm-live-blockquote': {
     borderLeft: '3px solid hsl(var(--border))',
-    paddingLeft: '1rem !important', // Use important to override default line padding
+    paddingLeft: '1rem !important',
     color: 'hsl(var(--muted-foreground))',
     fontStyle: 'italic',
   },
@@ -81,7 +81,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     color: 'hsl(var(--muted-foreground))',
     padding: '1rem',
     borderRadius: '0.5rem',
-    margin: '0.5rem -1rem', // Use negative margin to bleed into padding
+    margin: '0.5rem 0',
     whiteSpace: 'pre-wrap',
   },
 

@@ -65,13 +65,8 @@ class HrWidget extends WidgetType {
 
 // --- PLUGIN ---
 
-/**
- * Checks if the user's selection is currently overlapping with a given syntax node.
- * This is used to disable live preview for the element being edited.
- */
 function isNodeActive(view: EditorView, from: number, to: number): boolean {
     const { from: selFrom, to: selTo } = view.state.selection.main;
-    // Check if the selection range overlaps with the node's range.
     return selTo >= from && selFrom <= to;
 }
 
@@ -90,7 +85,7 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const decorations: { from: number, to: number, spec: any }[] = [];
+      const builder = new RangeSetBuilder<Decoration>();
 
       for (const { from, to } of view.visibleRanges) {
         syntaxTree(view.state).iterate({
@@ -103,52 +98,37 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
 
             if (node.name.startsWith("ATXHeading")) {
               const level = parseInt(node.name.replace("ATXHeading", ""), 10);
-              decorations.push({ from: node.from, to: node.from + level + 1, spec: Decoration.replace({}) });
-              decorations.push({ from: node.from + level + 1, to: node.to, spec: Decoration.mark({ class: `cm-live-header cm-live-header-${level}` }) });
+              builder.add(node.from, node.from + level + 1, Decoration.replace({}));
+              builder.add(node.from + level + 1, node.to, Decoration.mark({ class: `cm-live-header cm-live-header-${level}` }));
             }
             else if (node.name === "Emphasis") {
-              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
-              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
-              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-em" }) });
+              builder.add(node.from, node.from + 1, Decoration.replace({}));
+              builder.add(node.to - 1, node.to, Decoration.replace({}));
+              builder.add(node.from + 1, node.to - 1, Decoration.mark({ class: "cm-live-em" }));
             }
             else if (node.name === "StrongEmphasis") {
-              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
-              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
-              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strong" }) });
+              builder.add(node.from, node.from + 2, Decoration.replace({}));
+              builder.add(node.to - 2, node.to, Decoration.replace({}));
+              builder.add(node.from + 2, node.to - 2, Decoration.mark({ class: "cm-live-strong" }));
             }
             else if (node.name === "Strikethrough") {
-              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
-              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
-              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strikethrough" }) });
+              builder.add(node.from, node.from + 2, Decoration.replace({}));
+              builder.add(node.to - 2, node.to, Decoration.replace({}));
+              builder.add(node.from + 2, node.to - 2, Decoration.mark({ class: "cm-live-strikethrough" }));
             }
             else if (node.name === "Blockquote") {
-              decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-blockquote" } }) });
-              node.node.getChildren("QuoteMark").forEach(mark => {
-                decorations.push({ from: mark.from, to: mark.to, spec: Decoration.replace({}) });
-              });
+              builder.add(node.from, node.to, Decoration.line({ attributes: { class: "cm-live-blockquote" } }));
             }
             else if (node.name === "HorizontalRule") {
-              decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({ widget: new HrWidget() }) });
+              builder.add(node.from, node.to, Decoration.replace({ widget: new HrWidget() }));
             }
             else if (node.name === "FencedCode") {
-              const startMark = node.node.firstChild;
-              const endMark = node.node.lastChild;
-              if (startMark && endMark) {
-                decorations.push({ from: startMark.from, to: startMark.to, spec: Decoration.replace({}) });
-                if (endMark.from > startMark.to) {
-                  decorations.push({ from: endMark.from, to: endMark.to, spec: Decoration.replace({}) });
-                }
-                const contentFrom = startMark.to;
-                const contentTo = endMark.from;
-                if (contentTo > contentFrom) {
-                  decorations.push({ from: contentFrom, to: contentTo, spec: Decoration.mark({ class: "cm-live-codeblock" }) });
-                }
-              }
+              builder.add(node.from, node.to, Decoration.mark({ class: "cm-live-codeblock" }));
             }
             else if (node.name === "InlineCode") {
-              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
-              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
-              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-inline-code" }) });
+              builder.add(node.from, node.from + 1, Decoration.replace({}));
+              builder.add(node.to - 1, node.to, Decoration.replace({}));
+              builder.add(node.from + 1, node.to - 1, Decoration.mark({ class: "cm-live-inline-code" }));
             }
             else if (node.name === "Task") {
               const isChecked = view.state.doc.sliceString(node.from, node.to).includes("[x]");
@@ -160,23 +140,23 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
                     changes: { from: taskMarkerNode.from, to: taskMarkerNode.to, insert: newMarker }
                   });
                 };
-                decorations.push({ from: taskMarkerNode.from, to: taskMarkerNode.to, spec: Decoration.replace({ widget: new CheckboxWidget(isChecked, onToggle) }) });
+                builder.add(taskMarkerNode.from, taskMarkerNode.to, Decoration.replace({ widget: new CheckboxWidget(isChecked, onToggle) }));
               }
               if (isChecked) {
-                decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-task-checked" } }) });
+                builder.add(node.from, node.to, Decoration.line({ attributes: { class: "cm-live-task-checked" } }));
               }
               const listMark = node.node.parent?.firstChild;
               if (listMark && listMark.name === "ListMark") {
-                decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
+                builder.add(listMark.from, listMark.to, Decoration.replace({}));
               }
             }
             else if (node.name === "ListItem" && node.node.firstChild?.name !== "Task") {
               const listMark = node.node.firstChild;
               if (listMark) {
-                decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
+                builder.add(listMark.from, listMark.to, Decoration.replace({}));
               }
               if (node.node.parent?.name === "BulletList") {
-                decorations.push({ from: node.from, to: node.from, spec: Decoration.widget({ widget: new BulletWidget(), side: -1 }) });
+                builder.add(node.from, node.from, Decoration.widget({ widget: new BulletWidget(), side: -1 }));
               } else if (node.node.parent?.name === "OrderedList") {
                 let count = 1;
                 let current = node.node.prevSibling;
@@ -184,22 +164,11 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
                     if (current.name === "ListItem") count++;
                     current = current.prevSibling;
                 }
-                decorations.push({ from: node.from, to: node.from, spec: Decoration.widget({ widget: new NumberWidget(count), side: -1 }) });
+                builder.add(node.from, node.from, Decoration.widget({ widget: new NumberWidget(count), side: -1 }));
               }
             }
           },
         });
-      }
-
-      decorations.sort((a, b) => a.from - b.from);
-
-      const builder = new RangeSetBuilder<Decoration>();
-      for (const { from, to, spec } of decorations) {
-        try {
-          builder.add(from, to, spec);
-        } catch (e) {
-          console.warn(e);
-        }
       }
 
       return builder.finish();
