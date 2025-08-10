@@ -1,9 +1,6 @@
 import { EditorView, ViewPlugin, Decoration, ViewUpdate } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
-import {
-  DecorationRange,
-} from "@codemirror/view/dist/decoration";
 
 const hideAndStylePlugin = ViewPlugin.fromClass(
   class {
