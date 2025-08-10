@@ -7,7 +7,8 @@ import { defaultKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { useTheme } from 'next-themes';
-import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+import { HighlightStyle, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+import { tags as t } from '@lezer/highlight';
 import { lineStylingPlugin } from './codemirror/line-styling-plugin';
 
 interface CodeMirrorEditorProps {
@@ -16,8 +17,45 @@ interface CodeMirrorEditorProps {
   onFocusChange?: (isFocused: boolean) => void;
 }
 
-const getObsidianLikeTheme = (theme: string | undefined) => EditorView.theme({
-  // Base styles
+// This is the new, correct way to define syntax highlighting.
+// It styles the text based on the parser's semantic tags.
+const obsidianHighlightStyle = HighlightStyle.define([
+  // General content
+  { tag: t.strong, fontWeight: 'bold' },
+  { tag: t.emphasis, fontStyle: 'italic' },
+  { tag: t.strikethrough, textDecoration: 'line-through' },
+  
+  // Headings
+  { tag: t.heading, fontWeight: 'bold', color: 'hsl(var(--foreground))' },
+  { tag: t.heading1, fontSize: '2em' },
+  { tag: t.heading2, fontSize: '1.7em' },
+  { tag: t.heading3, fontSize: '1.4em' },
+  { tag: t.heading4, fontSize: '1.2em' },
+  
+  // Links
+  { tag: t.link, color: 'hsl(var(--primary))', textDecoration: 'underline', textDecorationColor: 'hsl(var(--primary) / 0.5)' },
+  { tag: t.url, color: 'hsl(var(--muted-foreground))', opacity: 0.8 },
+  
+  // Quotes
+  { tag: t.quote, fontStyle: 'italic', color: 'hsl(var(--muted-foreground))' },
+  
+  // Code
+  { tag: t.monospace, fontFamily: 'var(--font-geist-mono)', backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', padding: '0.1em 0.3em', borderRadius: '4px' },
+  
+  // Horizontal Rule
+  { tag: t.horizontalRule, display: 'block', border: 'none', borderTop: '2px solid hsl(var(--accent))', margin: '1em 0', height: '0' },
+
+  // De-emphasize the markdown syntax characters
+  { 
+    tag: [t.headingMark, t.quoteMark, t.listMark, t.linkMark, t.emphasisMark, t.strongMark, t.strikethroughMark, t.monospaceMark], 
+    color: 'hsl(var(--muted-foreground))', 
+    opacity: 0.6 
+  },
+]);
+
+// This theme now only handles the editor "frame" and custom line styles.
+// All syntax styling is handled by the HighlightStyle above.
+const getEditorFrameTheme = () => EditorView.theme({
   '&': {
     color: 'hsl(var(--foreground))',
     backgroundColor: 'hsl(var(--background))',
@@ -44,7 +82,7 @@ const getObsidianLikeTheme = (theme: string | undefined) => EditorView.theme({
     borderLeftColor: 'hsl(var(--foreground))'
   },
   '.cm-selectionBackground, .cm-content ::selection': {
-    backgroundColor: theme === 'dark' ? 'hsl(var(--primary) / 0.2)' : 'hsl(var(--primary) / 0.1)',
+    backgroundColor: 'hsl(var(--primary) / 0.15)',
   },
   '.cm-activeLine': {
     backgroundColor: 'transparent',
@@ -53,88 +91,10 @@ const getObsidianLikeTheme = (theme: string | undefined) => EditorView.theme({
     backgroundColor: 'hsl(var(--background))',
     border: 'none',
   },
-
-  // --- Syntax Highlighting & Styling ---
-
-  // De-emphasize markdown formatting characters
-  '& .cm-formatting, & .cm-formatting-link, & .cm-formatting-list, & .cm-formatting-quote': {
-    color: 'hsl(var(--muted-foreground))',
-    opacity: 0.8,
-    fontWeight: 'normal',
-  },
-  '& .cm-formatting-heading': {
-    color: 'hsl(var(--muted-foreground))',
-    opacity: 0.6,
-    fontWeight: 'bold',
-  },
-
-  // Headers
-  '& .cm-header': {
-    fontWeight: 'bold',
-  },
-  '& .cm-header-1': { fontSize: '2em' },
-  '& .cm-header-2': { fontSize: '1.7em' },
-  '& .cm-header-3': { fontSize: '1.4em' },
-  '& .cm-header-4': { fontSize: '1.2em' },
-  '& .cm-header-5': { fontSize: '1.1em' },
-  '& .cm-header-6': { fontSize: '1.0em' },
-
-  // Emphasis
-  '& .cm-emphasis': {
-    fontStyle: 'italic',
-  },
-  '& .cm-strong': {
-    fontWeight: 'bold',
-  },
-  '& .cm-strikethrough': {
-    textDecoration: 'line-through',
-  },
-
-  // Links
-  '& .cm-link': {
-    color: 'hsl(var(--primary))',
-    textDecoration: 'underline',
-    textDecorationColor: 'hsl(var(--primary) / 0.5)',
-  },
-  '& .cm-url': {
-    color: 'hsl(var(--muted-foreground))',
-    opacity: 0.8,
-  },
-
-  // Blockquotes (line style added by plugin)
-  '& .cm-quote': {
-    fontStyle: 'italic',
-    color: 'hsl(var(--muted-foreground))',
-  },
+  // Styles for the line-styling-plugin
   '& .cm-styled-quote-line': {
     borderLeft: '3px solid hsl(var(--accent))',
-    paddingLeft: '1rem !important', // Override the default line padding
-  },
-
-  // Code
-  '& .cm-inline-code, & .cm-code-block': {
-    fontFamily: 'var(--font-geist-mono)',
-    backgroundColor: 'hsl(var(--muted))',
-    color: 'hsl(var(--muted-foreground))',
-    padding: '0.1em 0.3em',
-    borderRadius: '4px',
-  },
-  '& .cm-formatting-code': {
-    backgroundColor: 'hsl(var(--muted) / 0.5)',
-  },
-
-  // Horizontal Rule
-  '& .cm-hr': {
-    display: 'block',
-    border: 'none',
-    borderTop: '2px solid hsl(var(--accent))',
-    margin: '1em 0',
-    height: '0',
-  },
-
-  // Task Lists (line style added by plugin)
-  '& .cm-task-marker': {
-    fontFamily: 'var(--font-geist-mono)',
+    paddingLeft: 'calc(2rem - 3px) !important',
   },
   '& .cm-styled-task-line-checked': {
     textDecoration: 'line-through',
@@ -149,7 +109,7 @@ export default function CodeMirrorEditor({
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-  const { theme } = useTheme();
+  const { theme } = useTheme(); // We still need this to re-render on theme change
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -163,9 +123,11 @@ export default function CodeMirrorEditor({
           base: markdownLanguage,
           codeLanguages: languages,
         }),
-        getObsidianLikeTheme(theme),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-        lineStylingPlugin,
+        // Correctly layered extensions
+        getEditorFrameTheme(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }), // Base styles for code blocks etc.
+        syntaxHighlighting(obsidianHighlightStyle), // Our custom styles on top
+        lineStylingPlugin, // Line-level decorations
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
@@ -198,7 +160,7 @@ export default function CodeMirrorEditor({
       viewRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [theme]); // Re-initialize when theme changes
 
   useEffect(() => {
     if (viewRef.current && initialContent !== viewRef.current.state.doc.toString()) {

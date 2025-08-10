@@ -17,6 +17,7 @@
     "@codemirror/view": "^6.28.1",
     "@hookform/resolvers": "^5.0.1",
     "@lezer/common": "^1.2.3",
+    "@lezer/highlight": "^1.2.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -78,7 +79,7 @@
     "zod": "^3.25.28"
   },
   "devDependencies": {
-    "@dyad-sh/nextjs-webpack-component-tagger": "^0.8.0",
+    "@dyad-sh/nextjs-webpack-component-tagger": "latest",
     "@tauri-apps/cli": "^1.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
