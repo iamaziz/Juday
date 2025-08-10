@@ -106,7 +106,7 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
         <div className="flex flex-col h-full">
           {viewMode === 'chat' ? (
             <>
-              <div className="p-4 border-b flex items-center gap-2">
+              <div className="p-4 pr-12 border-b flex items-center gap-2">
                 <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2">
                   <Input
                     ref={inputRef}

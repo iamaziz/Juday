@@ -41,7 +41,7 @@ export default function ChatHistory({ onSwitchToChat }: ChatHistoryProps) {
   if (viewingSessionId) {
     return (
       <div className="flex flex-col h-full">
-        <div className="p-2 border-b">
+        <div className="p-2 pr-12 border-b">
           <Button variant="ghost" onClick={() => setViewingSessionId(null)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to History
@@ -54,7 +54,7 @@ export default function ChatHistory({ onSwitchToChat }: ChatHistoryProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b flex justify-between items-center">
+      <div className="p-4 pr-12 border-b flex justify-between items-center">
         <h3 className="font-semibold text-lg">Chat History</h3>
         <Button variant="outline" onClick={onSwitchToChat}>
           <ArrowLeft className="mr-2 h-4 w-4" />
