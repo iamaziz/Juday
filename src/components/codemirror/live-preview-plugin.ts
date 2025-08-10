@@ -19,7 +19,6 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
     buildDecorations(view: EditorView): DecorationSet {
       const builder = new RangeSetBuilder<Decoration>();
       const { from, to } = view.state.selection.main;
-      const isSelection = from !== to;
 
       syntaxTree(view.state).iterate({
         enter: (node) => {
@@ -28,40 +27,46 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
           // Bold: **text**
           if (node.name.includes("StrongEmphasis")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 2, Decoration.replace({})); // hide **
-              builder.add(node.to - 2, node.to, Decoration.replace({})); // hide **
+              builder.add(node.from, node.from + 2, Decoration.replace({}));
             }
             builder.add(
               node.from + 2,
               node.to - 2,
               Decoration.mark({ class: "cm-strong-emphasis" })
             );
+            if (!isCursorInside) {
+              builder.add(node.to - 2, node.to, Decoration.replace({}));
+            }
           }
 
           // Italic: *text* or _text_
           if (node.name.includes("Emphasis")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 1, Decoration.replace({})); // hide *
-              builder.add(node.to - 1, node.to, Decoration.replace({})); // hide *
+              builder.add(node.from, node.from + 1, Decoration.replace({}));
             }
             builder.add(
               node.from + 1,
               node.to - 1,
               Decoration.mark({ class: "cm-emphasis" })
             );
+            if (!isCursorInside) {
+              builder.add(node.to - 1, node.to, Decoration.replace({}));
+            }
           }
 
           // Strikethrough: ~~text~~
           if (node.name.includes("Strikethrough")) {
             if (!isCursorInside) {
-              builder.add(node.from, node.from + 2, Decoration.replace({})); // hide ~~
-              builder.add(node.to - 2, node.to, Decoration.replace({})); // hide ~~
+              builder.add(node.from, node.from + 2, Decoration.replace({}));
             }
             builder.add(
               node.from + 2,
               node.to - 2,
               Decoration.mark({ class: "cm-strikethrough" })
             );
+            if (!isCursorInside) {
+              builder.add(node.to - 2, node.to, Decoration.replace({}));
+            }
           }
         },
       });
