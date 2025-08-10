@@ -14,7 +14,7 @@ export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, sessionId: currentSessionId } = await req.json();
     const supabase = await createClient();
 
     // 1. Authenticate the user
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       .from('sheets')
       .select('title, content')
       .eq('user_id', user.id)
-      .order('title', { ascending: true }); // Oldest to newest for chronological context
+      .order('title', { ascending: true });
 
     if (error) {
       console.error('Error fetching sheets for chat context:', error);
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       .map(sheet => `--- Entry Date: ${sheet.title} ---\n\n${sheet.content || 'No content for this day.'}`)
       .join('\n\n\n');
 
-    // 4. Construct the system prompt with specific instructions for math formatting
+    // 4. Construct the system prompt
     const systemPrompt = {
       role: 'system',
       content: `You are a helpful AI assistant named Juday integrated into a digital journal. Your purpose is to help the user reflect on their past entries.
@@ -61,23 +61,76 @@ ${journalContext}
 Now, please answer the user's question based on their journal.`
     };
 
-    // 5. Call the local LLM with the prepared context and user messages
+    // This will hold the session ID for the current conversation.
+    let sessionId = currentSessionId;
+    const lastUserMessage = messages[messages.length - 1];
+
+    // 5. Call the local LLM
     const response = await ollama.chat.completions.create({
-      model: process.env.OLLAMA_MODEL || 'qwen3:latest', // The model to use
+      model: process.env.OLLAMA_MODEL || 'qwen3:latest',
       stream: true,
       messages: [systemPrompt, ...messages],
     });
 
-    // 6. Stream the response back to the client
-    // The 'as any' cast is a workaround for a TypeScript type mismatch between the
-    // OpenAI-compatible stream and the type expected by the 'ai' package.
-    const stream = OpenAIStream(response as any);
+    // 6. Stream the response back, using callbacks to save to DB
+    const stream = OpenAIStream(response as any, {
+      onStart: async () => {
+        if (!sessionId && lastUserMessage.role === 'user') {
+          const { data: newSession, error: newSessionError } = await supabase
+            .from('chat_sessions')
+            .insert({
+              user_id: user.id,
+              title: lastUserMessage.content.substring(0, 100),
+            })
+            .select('id')
+            .single();
+
+          if (newSessionError) {
+            console.error('Error creating new chat session:', newSessionError);
+            return;
+          }
+          sessionId = newSession.id;
+        }
+
+        if (sessionId && lastUserMessage.role === 'user') {
+          const { error: userMessageError } = await supabase
+            .from('chat_messages')
+            .insert({
+              session_id: sessionId,
+              role: 'user',
+              content: lastUserMessage.content,
+            });
+          if (userMessageError) {
+            console.error('Error saving user message:', userMessageError);
+          }
+        }
+      },
+      onCompletion: async (completion: string) => {
+        if (sessionId) {
+          const { error: assistantMessageError } = await supabase
+            .from('chat_messages')
+            .insert({
+              session_id: sessionId,
+              role: 'assistant',
+              content: completion,
+            });
+          if (assistantMessageError) {
+            console.error('Error saving assistant message:', assistantMessageError);
+          }
+        }
+      },
+    });
     
-    return new StreamingTextResponse(stream);
+    const headers = new Headers();
+    // If we created a new session, send its ID back to the client.
+    if (!currentSessionId && sessionId) {
+      headers.set('x-juday-session-id', sessionId);
+    }
+
+    return new StreamingTextResponse(stream, { headers });
 
   } catch (e: any) {
     console.error('Error in chat API:', e);
-    // Provide a more specific error message if the connection is refused
     if (e.cause?.code === 'ECONNREFUSED') {
         return new Response('Could not connect to the local AI model. Please ensure it is running and the `OLLAMA_API_BASE_URL` in your .env file is correct.', { status: 500 });
     }

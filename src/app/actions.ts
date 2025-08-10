@@ -133,3 +133,59 @@ export async function importAllData(fileContent: string): Promise<ImportResult> 
     skippedCount: skippedCount,
   };
 }
+
+export async function getChatSessions(): Promise<{ id: string; title: string | null; created_at: string }[] | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  const { data, error } = await supabase
+    .from('chat_sessions')
+    .select('id, title, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching chat sessions:', error);
+    return { error: error.message };
+  }
+
+  return data;
+}
+
+export async function getChatMessages(sessionId: string): Promise<{ role: string; content: string; id: string }[] | { error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
+
+  // First, verify the user owns this session
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('chat_sessions')
+    .select('id')
+    .eq('id', sessionId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (sessionError || !sessionData) {
+    return { error: 'Session not found or access denied.' };
+  }
+
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('id, role, content')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching chat messages:', error);
+    return { error: error.message };
+  }
+
+  return data;
+}

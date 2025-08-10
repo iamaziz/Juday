@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useChat, type Message } from "ai/react";
 import {
   Dialog,
@@ -40,8 +40,19 @@ const groupMessages = (messages: Message[]) => {
 
 
 export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   const { messages, input, handleInputChange, handleSubmit, isLoading, error, setMessages } = useChat({
     api: "/api/chat",
+    body: {
+      sessionId,
+    },
+    onResponse: (response) => {
+      const newSessionId = response.headers.get('x-juday-session-id');
+      if (newSessionId) {
+        setSessionId(newSessionId);
+      }
+    },
     onError: (err: Error) => {
       // Error is handled in the UI below
     },
@@ -61,6 +72,7 @@ export default function ChatPalette({ isOpen, onOpenChange }: ChatPaletteProps) 
   useEffect(() => {
     if (isOpen) {
       setMessages([]);
+      setSessionId(null); // Reset for a new chat
       // Delay focus slightly to ensure dialog is fully rendered and ready
       setTimeout(() => {
         inputRef.current?.focus();
