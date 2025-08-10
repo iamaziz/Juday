@@ -49,70 +49,46 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     backgroundColor: 'transparent',
   },
   
-  // Markdown-specific styles
-  '.cm-strong': { fontWeight: 'bold' },
-  '.cm-em': { fontStyle: 'italic' },
-  '.cm-strikethrough': { textDecoration: 'line-through' },
+  // Live Preview Styles
+  '.cm-live-strong': { fontWeight: 'bold' },
+  '.cm-live-em': { fontStyle: 'italic' },
+  '.cm-live-strikethrough': { textDecoration: 'line-through' },
 
-  '.cm-header': {
+  '.cm-live-header': {
     fontWeight: 'bold',
     lineHeight: '1.25',
-    marginTop: '1em',
-    marginBottom: '0.4em',
   },
-  '.cm-header-1': { fontSize: '2em' },
-  '.cm-header-2': { fontSize: '1.75em' },
-  '.cm-header-3': { fontSize: '1.5em' },
-  '.cm-header-4': { fontSize: '1.25em' },
-  '.cm-header-5': { fontSize: '1.1em' },
-  '.cm-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))' },
+  '.cm-live-header-1': { fontSize: '2em', marginTop: '1em', marginBottom: '0.4em' },
+  '.cm-live-header-2': { fontSize: '1.75em', marginTop: '1em', marginBottom: '0.4em' },
+  '.cm-live-header-3': { fontSize: '1.5em', marginTop: '1em', marginBottom: '0.4em' },
+  '.cm-live-header-4': { fontSize: '1.25em', marginTop: '1em', marginBottom: '0.4em' },
+  '.cm-live-header-5': { fontSize: '1.1em', marginTop: '1em', marginBottom: '0.4em' },
+  '.cm-live-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))', marginTop: '1em', marginBottom: '0.4em' },
 
-  '.cm-quote': {
+  '.cm-live-blockquote': {
     fontStyle: 'italic',
     borderLeft: '3px solid hsl(var(--border))',
     paddingLeft: '0.8rem',
     color: 'hsl(var(--muted-foreground))',
   },
-  '.cm-link': {
-    color: 'hsl(var(--primary))',
-    textDecoration: 'underline',
-    textUnderlineOffset: '2px',
-  },
-  '.cm-inline-code': {
-    fontFamily: 'var(--font-geist-mono)',
-    backgroundColor: 'hsl(var(--muted))',
-    color: 'hsl(var(--muted-foreground))',
-    padding: '0.1em 0.3em',
-    borderRadius: '0.25rem',
-  },
-  '.cm-codeblock': {
-    fontFamily: 'var(--font-geist-mono)',
-    backgroundColor: 'hsl(var(--muted))',
-    color: 'hsl(var(--muted-foreground))',
-    paddingLeft: '1rem',
-    paddingRight: '1rem',
-  },
 
   // List styling
-  '.cm-list-item .cm-line': {
+  '.cm-list-item-line': {
     position: 'relative',
     paddingLeft: '1.5rem',
-    lineHeight: '1.5',
+    lineHeight: '1.5', // Tighter line-height for list items
   },
-  '.cm-list-ul > .cm-list-item .cm-line::before': {
+  '.cm-ul-list-item::before': {
     content: "'•'",
     position: 'absolute',
     left: '0.5rem',
     color: 'hsl(var(--muted-foreground))',
   },
-  '.cm-list-ol': {
-    counterReset: 'list-counter',
+  '.cm-ol-list-item': {
+    counterReset: 'list-counter', // This is tricky with line-based decorations
   },
-  '.cm-list-ol > .cm-list-item': {
-    counterIncrement: 'list-counter',
-  },
-  '.cm-list-ol > .cm-list-item .cm-line::before': {
-    content: 'counter(list-counter) "."',
+  '.cm-ol-list-item::before': {
+    content: 'counter(list-counter) "."', // This might not work as expected due to CM's rendering
     position: 'absolute',
     left: '0',
     width: '1.2rem',
@@ -120,14 +96,6 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     marginRight: '0.3rem',
     color: 'hsl(var(--muted-foreground))',
   },
-
-  '.cm-task-marker': {
-    marginRight: '0.5em',
-  },
-  '.cm-task-checked .cm-line': {
-    textDecoration: 'line-through',
-    color: 'hsl(var(--muted-foreground))',
-  }
 });
 
 export default function CodeMirrorEditor({

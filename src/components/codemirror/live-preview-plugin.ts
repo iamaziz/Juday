@@ -2,6 +2,20 @@ import { EditorView, ViewPlugin, Decoration, ViewUpdate } from "@codemirror/view
 import { syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
 
+type DecorationSet = ReturnType<RangeSetBuilder<Decoration>["finish"]>;
+
+// Helper to check if the cursor is on the same line as the node
+function isCursorOnLine(view: EditorView, from: number, to: number): boolean {
+  const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
+  // A node is active if the selection is not collapsed and overlaps with the node.
+  if (selectionFrom !== selectionTo && Math.max(from, selectionFrom) < Math.min(to, selectionTo)) {
+    return true;
+  }
+  // Or if the cursor is on the same line.
+  const line = view.state.doc.lineAt(from);
+  return selectionFrom >= line.from && selectionTo <= line.to;
+}
+
 const livePreviewPluginInstance = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -17,76 +31,74 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const decorations: { from: number, to: number, spec: Decoration }[] = [];
-      const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
+      const decorations: { from: number, to: number, spec: any }[] = [];
 
       for (const { from, to } of view.visibleRanges) {
         syntaxTree(view.state).iterate({
           from,
           to,
           enter: (node) => {
-            const isCursorInside = selectionFrom >= node.from && selectionTo <= node.to;
+            const cursorOnLine = isCursorOnLine(view, node.from, node.to);
 
-            // Hide markers for bold, italic, strikethrough
-            if (node.name.endsWith("Mark") && node.node.parent) {
-              const parentName = node.node.parent.name;
-              if (["StrongEmphasis", "Emphasis", "Strikethrough"].includes(parentName)) {
-                const isParentCursorInside = selectionFrom >= node.node.parent.from && selectionTo <= node.node.parent.to;
-                if (!isParentCursorInside) {
-                  decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({}) });
+            if (cursorOnLine) return;
+
+            // Headings
+            if (node.name.startsWith("ATXHeading")) {
+              const level = parseInt(node.name.replace("ATXHeading", ""), 10);
+              decorations.push({ from: node.from, to: node.from + level + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: `cm-live-header cm-live-header-${level}` } }) });
+            }
+            // Emphasis (Italic)
+            else if (node.name === "Emphasis") {
+              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-em" }) });
+            }
+            // StrongEmphasis (Bold)
+            else if (node.name === "StrongEmphasis") {
+              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strong" }) });
+            }
+            // Strikethrough
+            else if (node.name === "Strikethrough") {
+              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strikethrough" }) });
+            }
+            // Lists
+            else if (node.name === "ListItem") {
+              const listMark = node.node.firstChild;
+              if (listMark) {
+                decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
+              }
+              const listTypeClass = node.node.parent?.name === "BulletList" ? "cm-ul-list-item" : "cm-ol-list-item";
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: `cm-list-item-line ${listTypeClass}` } }) });
+            }
+            // Blockquote
+            else if (node.name === "Blockquote") {
+                const quoteMark = node.node.firstChild;
+                if (quoteMark) {
+                    decorations.push({ from: quoteMark.from, to: quoteMark.to, spec: Decoration.replace({}) });
                 }
-              }
-            }
-
-            // Headings, Blockquotes, Lists
-            if (["HeaderMark", "QuoteMark", "ListMark"].includes(node.name)) {
-              const line = view.state.doc.lineAt(node.from);
-              const isCursorOnLine = selectionFrom >= line.from && selectionTo <= line.to;
-              if (!isCursorOnLine) {
-                decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({}) });
-              }
-            }
-
-            // Links
-            if (node.name === "Link" && !isCursorInside) {
-              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) }); // Hide [
-              const linkTextEnd = node.node.getChild("LinkText")?.to ?? node.from + 1;
-              decorations.push({ from: linkTextEnd, to: linkTextEnd + 1, spec: Decoration.replace({}) }); // Hide ]
-              const urlPartStart = node.node.getChild("LinkMark")?.from ?? linkTextEnd + 1;
-              decorations.push({ from: urlPartStart, to: node.to, spec: Decoration.replace({}) }); // Hide (url)
-            }
-
-            // Inline Code
-            if (node.name === "InlineCode" && !isCursorInside) {
-              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) }); // Hide `
-              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) }); // Hide `
-            }
-
-            // Fenced Code Blocks
-            if (node.name === "FencedCode" && !isCursorInside) {
-              const startMark = node.node.getChild("CodeMark");
-              const endMark = node.node.lastChild;
-              if (startMark) {
-                decorations.push({ from: startMark.from, to: startMark.to, spec: Decoration.replace({}) });
-              }
-              if (endMark && endMark.name === "CodeMark") {
-                decorations.push({ from: endMark.from, to: endMark.to, spec: Decoration.replace({}) });
-              }
-              const info = node.node.getChild("CodeInfo");
-              if (info) {
-                decorations.push({ from: info.from, to: info.to, spec: Decoration.replace({}) });
-              }
+                decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-blockquote" } }) });
             }
           },
         });
       }
 
-      // Sort decorations by their 'from' position to prevent crashes
       decorations.sort((a, b) => a.from - b.from);
 
       const builder = new RangeSetBuilder<Decoration>();
       for (const { from, to, spec } of decorations) {
-        builder.add(from, to, spec);
+        try {
+          builder.add(from, to, spec);
+        } catch (e) {
+          // Ignore errors from overlapping ranges, which can happen
+          // with complex nested structures. The sorted nature helps, but
+          // this is a safeguard.
+          console.warn(e);
+        }
       }
 
       return builder.finish();
@@ -96,7 +108,5 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   }
 );
-
-type DecorationSet = ReturnType<RangeSetBuilder<Decoration>["finish"]>;
 
 export const livePreviewPlugin = [livePreviewPluginInstance];
