@@ -17,8 +17,6 @@ interface CodeMirrorEditorProps {
   onFocusChange?: (isFocused: boolean) => void;
 }
 
-// This is the new, correct way to define syntax highlighting.
-// It styles the text based on the parser's semantic tags.
 const obsidianHighlightStyle = HighlightStyle.define([
   // General content
   { tag: t.strong, fontWeight: 'bold' },
@@ -43,18 +41,17 @@ const obsidianHighlightStyle = HighlightStyle.define([
   { tag: t.monospace, fontFamily: 'var(--font-geist-mono)', backgroundColor: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', padding: '0.1em 0.3em', borderRadius: '4px' },
   
   // Horizontal Rule
-  { tag: t.horizontalRule, display: 'block', border: 'none', borderTop: '2px solid hsl(var(--accent))', margin: '1em 0', height: '0' },
+  { tag: t.contentSeparator, display: 'block', border: 'none', borderTop: '2px solid hsl(var(--accent))', margin: '1em 0', height: '0' },
 
-  // De-emphasize the markdown syntax characters
+  // De-emphasize all markdown formatting characters (meta tags)
   { 
-    tag: [t.headingMark, t.quoteMark, t.listMark, t.linkMark, t.emphasisMark, t.strongMark, t.strikethroughMark, t.monospaceMark], 
+    tag: t.meta, 
     color: 'hsl(var(--muted-foreground))', 
     opacity: 0.6 
   },
 ]);
 
 // This theme now only handles the editor "frame" and custom line styles.
-// All syntax styling is handled by the HighlightStyle above.
 const getEditorFrameTheme = () => EditorView.theme({
   '&': {
     color: 'hsl(var(--foreground))',
@@ -109,7 +106,7 @@ export default function CodeMirrorEditor({
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-  const { theme } = useTheme(); // We still need this to re-render on theme change
+  const { theme } = useTheme();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -123,11 +120,10 @@ export default function CodeMirrorEditor({
           base: markdownLanguage,
           codeLanguages: languages,
         }),
-        // Correctly layered extensions
         getEditorFrameTheme(),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }), // Base styles for code blocks etc.
-        syntaxHighlighting(obsidianHighlightStyle), // Our custom styles on top
-        lineStylingPlugin, // Line-level decorations
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        syntaxHighlighting(obsidianHighlightStyle),
+        lineStylingPlugin,
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
@@ -160,7 +156,7 @@ export default function CodeMirrorEditor({
       viewRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]); // Re-initialize when theme changes
+  }, [theme]);
 
   useEffect(() => {
     if (viewRef.current && initialContent !== viewRef.current.state.doc.toString()) {
