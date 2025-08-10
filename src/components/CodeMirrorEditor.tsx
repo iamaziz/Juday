@@ -15,7 +15,6 @@ interface CodeMirrorEditorProps {
   onFocusChange?: (isFocused: boolean) => void;
 }
 
-// Expanded CodeMirror theme for a richer "Obsidian-like" live preview
 const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   // Base styles
   '&': {
@@ -23,7 +22,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     backgroundColor: 'hsl(var(--background))',
     height: '100%',
     minHeight: '400px',
-    fontSize: '1rem',
+    fontSize: '16px',
     fontFamily: 'var(--font-geist-sans)',
   },
   '.cm-content': {
@@ -33,6 +32,9 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-scroller': {
     fontFamily: 'inherit',
     lineHeight: '1.7',
+  },
+  '.cm-line': {
+    padding: '0 2px',
   },
   '.cm-focused': {
     outline: 'none',
@@ -48,21 +50,23 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   },
   
   // Markdown-specific styles
-  '.cm-strong': {
+  '.cm-strong': { fontWeight: 'bold' },
+  '.cm-em': { fontStyle: 'italic' },
+  '.cm-strikethrough': { textDecoration: 'line-through' },
+
+  '.cm-header': {
     fontWeight: 'bold',
+    lineHeight: '1.25',
+    marginTop: '1em',
+    marginBottom: '0.4em',
   },
-  '.cm-em': {
-    fontStyle: 'italic',
-  },
-  '.cm-strikethrough': {
-    textDecoration: 'line-through',
-  },
-  '.cm-header-1': { fontSize: '2rem', fontWeight: 'bold', lineHeight: '1.2' },
-  '.cm-header-2': { fontSize: '1.75rem', fontWeight: 'bold', lineHeight: '1.2' },
-  '.cm-header-3': { fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1.2' },
-  '.cm-header-4': { fontSize: '1.25rem', fontWeight: 'bold', lineHeight: '1.2' },
-  '.cm-header-5': { fontSize: '1.1rem', fontWeight: 'bold', lineHeight: '1.2' },
-  '.cm-header-6': { fontSize: '1rem', fontWeight: 'bold', color: 'hsl(var(--muted-foreground))', lineHeight: '1.2' },
+  '.cm-header-1': { fontSize: '2em' },
+  '.cm-header-2': { fontSize: '1.75em' },
+  '.cm-header-3': { fontSize: '1.5em' },
+  '.cm-header-4': { fontSize: '1.25em' },
+  '.cm-header-5': { fontSize: '1.1em' },
+  '.cm-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))' },
+
   '.cm-quote': {
     fontStyle: 'italic',
     borderLeft: '3px solid hsl(var(--border))',
@@ -78,10 +82,9 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     fontFamily: 'var(--font-geist-mono)',
     backgroundColor: 'hsl(var(--muted))',
     color: 'hsl(var(--muted-foreground))',
-    padding: '0.1rem 0.3rem',
+    padding: '0.1em 0.3em',
     borderRadius: '0.25rem',
   },
-  // Styles for fenced code blocks. Applied to each line inside the block.
   '.cm-codeblock': {
     fontFamily: 'var(--font-geist-mono)',
     backgroundColor: 'hsl(var(--muted))',
@@ -89,6 +92,35 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     paddingLeft: '1rem',
     paddingRight: '1rem',
   },
+
+  // List styling
+  '.cm-list-item .cm-line': {
+    position: 'relative',
+    paddingLeft: '1.5rem',
+    lineHeight: '1.5',
+  },
+  '.cm-list-ul > .cm-list-item .cm-line::before': {
+    content: "'•'",
+    position: 'absolute',
+    left: '0.5rem',
+    color: 'hsl(var(--muted-foreground))',
+  },
+  '.cm-list-ol': {
+    counterReset: 'list-counter',
+  },
+  '.cm-list-ol > .cm-list-item': {
+    counterIncrement: 'list-counter',
+  },
+  '.cm-list-ol > .cm-list-item .cm-line::before': {
+    content: 'counter(list-counter) "."',
+    position: 'absolute',
+    left: '0',
+    width: '1.2rem',
+    textAlign: 'right',
+    marginRight: '0.3rem',
+    color: 'hsl(var(--muted-foreground))',
+  },
+
   '.cm-task-marker': {
     marginRight: '0.5em',
   },
@@ -162,5 +194,5 @@ export default function CodeMirrorEditor({
     }
   }, [initialContent]);
 
-  return <div ref={editorRef} className="h-full w-full prose dark:prose-invert max-w-none" />;
+  return <div ref={editorRef} className="h-full w-full" />;
 }
