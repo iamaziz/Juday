@@ -85,7 +85,7 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const decorations: { from: number, to: number, spec: any }[] = [];
+      const decorations: { from: number, to: number, spec: Decoration }[] = [];
 
       for (const { from, to } of view.visibleRanges) {
         syntaxTree(view.state).iterate({
@@ -171,7 +171,12 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
         });
       }
 
-      decorations.sort((a, b) => a.from - b.from);
+      decorations.sort((a, b) => {
+        if (a.from !== b.from) {
+          return a.from - b.from;
+        }
+        return (a.spec.startSide as number) - (b.spec.startSide as number);
+      });
 
       const builder = new RangeSetBuilder<Decoration>();
       for (const { from, to, spec } of decorations) {
