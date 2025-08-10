@@ -34,7 +34,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
     lineHeight: '1.7',
   },
   '.cm-line': {
-    padding: '0 2rem', // Add horizontal padding to lines
+    padding: '0 2rem',
   },
   '.cm-focused': {
     outline: 'none',
@@ -52,6 +52,7 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   // Live Preview Styles
   '.cm-live-strong': { fontWeight: 'bold' },
   '.cm-live-em': { fontStyle: 'italic' },
+  '.cm-live-strikethrough': { textDecoration: 'line-through' },
 
   '.cm-live-header': {
     display: 'inline-block',
@@ -66,7 +67,42 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-live-header-5': { fontSize: '1.1em', marginTop: '1em', marginBottom: '0.4em' },
   '.cm-live-header-6': { fontSize: '1em', color: 'hsl(var(--muted-foreground))', marginTop: '1em', marginBottom: '0.4em' },
 
+  '.cm-live-blockquote': {
+    borderLeft: '3px solid hsl(var(--border))',
+    paddingLeft: '1rem !important', // Use important to override default line padding
+    color: 'hsl(var(--muted-foreground))',
+    fontStyle: 'italic',
+  },
+
+  '.cm-live-codeblock': {
+    display: 'block',
+    fontFamily: 'var(--font-geist-mono)',
+    backgroundColor: 'hsl(var(--muted))',
+    color: 'hsl(var(--muted-foreground))',
+    padding: '1rem',
+    borderRadius: '0.5rem',
+    margin: '0.5rem -1rem', // Use negative margin to bleed into padding
+    whiteSpace: 'pre-wrap',
+  },
+
+  '.cm-live-inline-code': {
+    fontFamily: 'var(--font-geist-mono)',
+    backgroundColor: 'hsl(var(--muted))',
+    color: 'hsl(var(--muted-foreground))',
+    padding: '0.1em 0.3em',
+    borderRadius: '0.25rem',
+  },
+
   // Widget Styles
+  '.cm-live-hr-container': {
+    width: '100%',
+    padding: '1rem 0',
+  },
+  '.cm-live-hr-container hr': {
+    border: 'none',
+    borderTop: '2px solid hsl(var(--border))',
+    margin: 0,
+  },
   '.cm-live-task-marker': {
     display: 'inline-block',
     marginRight: '0.5em',

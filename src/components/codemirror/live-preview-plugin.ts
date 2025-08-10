@@ -18,7 +18,7 @@ class CheckboxWidget extends WidgetType {
     checkbox.type = "checkbox";
     checkbox.checked = this.checked;
     checkbox.addEventListener("click", (e) => {
-      e.preventDefault(); // Prevent editor from losing focus
+      e.preventDefault();
       this.onToggle();
     });
     wrap.appendChild(checkbox);
@@ -26,7 +26,7 @@ class CheckboxWidget extends WidgetType {
   }
 
   ignoreEvent(): boolean {
-    return false; // We want to handle the click event
+    return false;
   }
 }
 
@@ -51,10 +51,20 @@ class NumberWidget extends WidgetType {
     ignoreEvent() { return true; }
 }
 
+class HrWidget extends WidgetType {
+  toDOM() {
+    const hrContainer = document.createElement("div");
+    hrContainer.className = "cm-live-hr-container";
+    const hr = document.createElement("hr");
+    hrContainer.appendChild(hr);
+    return hrContainer;
+  }
+  ignoreEvent() { return true; }
+}
+
 
 // --- PLUGIN ---
 
-// Helper to check if the cursor is on the same line as the node
 function isCursorOnLine(view: EditorView, from: number, to: number): boolean {
   const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
   const line = view.state.doc.lineAt(from);
@@ -87,25 +97,55 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
 
             if (cursorOnLine) return;
 
-            // Headings
             if (node.name.startsWith("ATXHeading")) {
               const level = parseInt(node.name.replace("ATXHeading", ""), 10);
               decorations.push({ from: node.from, to: node.from + level + 1, spec: Decoration.replace({}) });
               decorations.push({ from: node.from + level + 1, to: node.to, spec: Decoration.mark({ class: `cm-live-header cm-live-header-${level}` }) });
             }
-            // Emphasis (Italic)
             else if (node.name === "Emphasis") {
               decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
               decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
               decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-em" }) });
             }
-            // StrongEmphasis (Bold)
             else if (node.name === "StrongEmphasis") {
               decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
               decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
               decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strong" }) });
             }
-            // Task Lists
+            else if (node.name === "Strikethrough") {
+              decorations.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 2, to: node.to - 2, spec: Decoration.mark({ class: "cm-live-strikethrough" }) });
+            }
+            else if (node.name === "Blockquote") {
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-blockquote" } }) });
+              node.node.getChildren("QuoteMark").forEach(mark => {
+                decorations.push({ from: mark.from, to: mark.to, spec: Decoration.replace({}) });
+              });
+            }
+            else if (node.name === "HorizontalRule") {
+              decorations.push({ from: node.from, to: node.to, spec: Decoration.replace({ widget: new HrWidget() }) });
+            }
+            else if (node.name === "FencedCode") {
+              const startMark = node.node.firstChild;
+              const endMark = node.node.lastChild;
+              if (startMark && endMark) {
+                decorations.push({ from: startMark.from, to: startMark.to, spec: Decoration.replace({}) });
+                if (endMark.from > startMark.to) {
+                  decorations.push({ from: endMark.from, to: endMark.to, spec: Decoration.replace({}) });
+                }
+                const contentFrom = startMark.to;
+                const contentTo = endMark.from;
+                if (contentTo > contentFrom) {
+                  decorations.push({ from: contentFrom, to: contentTo, spec: Decoration.mark({ class: "cm-live-codeblock" }) });
+                }
+              }
+            }
+            else if (node.name === "InlineCode") {
+              decorations.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
+              decorations.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+              decorations.push({ from: node.from + 1, to: node.to - 1, spec: Decoration.mark({ class: "cm-live-inline-code" }) });
+            }
             else if (node.name === "Task") {
               const isChecked = view.state.doc.sliceString(node.from, node.to).includes("[x]");
               const taskMarkerNode = node.node.getChild("TaskMarker");
@@ -121,13 +161,11 @@ const livePreviewPluginInstance = ViewPlugin.fromClass(
               if (isChecked) {
                 decorations.push({ from: node.from, to: node.to, spec: Decoration.line({ attributes: { class: "cm-live-task-checked" } }) });
               }
-              // Hide the list marker (e.g., '-')
               const listMark = node.node.parent?.firstChild;
               if (listMark && listMark.name === "ListMark") {
                 decorations.push({ from: listMark.from, to: listMark.to, spec: Decoration.replace({}) });
               }
             }
-            // Regular Lists
             else if (node.name === "ListItem" && node.node.firstChild?.name !== "Task") {
               const listMark = node.node.firstChild;
               if (listMark) {
