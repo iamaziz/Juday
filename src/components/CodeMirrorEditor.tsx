@@ -53,11 +53,11 @@ const getEditorTheme = (theme: string | undefined) => EditorView.theme({
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent',
   },
-  // Live Preview Styles
-  '.cm-strong-emphasis': {
+  // Use standard markdown classes provided by @codemirror/lang-markdown
+  '.cm-strong': {
     fontWeight: 'bold',
   },
-  '.cm-emphasis': {
+  '.cm-em': {
     fontStyle: 'italic',
   },
   '.cm-strikethrough': {

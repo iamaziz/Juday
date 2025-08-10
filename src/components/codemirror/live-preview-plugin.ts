@@ -2,7 +2,7 @@ import { EditorView, ViewPlugin, Decoration, ViewUpdate } from "@codemirror/view
 import { syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
 
-const hideAndStylePlugin = ViewPlugin.fromClass(
+const hideMarkersPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
 
@@ -17,61 +17,28 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
     }
 
     buildDecorations(view: EditorView): DecorationSet {
-      const decorationsToAdd: { from: number; to: number; spec: Decoration }[] = [];
-      const { from, to } = view.state.selection.main;
+      const builder = new RangeSetBuilder<Decoration>();
+      const { from: selectionFrom, to: selectionTo } = view.state.selection.main;
 
       syntaxTree(view.state).iterate({
         enter: (node) => {
-          const isCursorInside = from >= node.from && to <= node.to;
+          const parent = node.node.parent;
+          if (!parent) return;
 
-          // Bold: **text**
-          if (node.name.includes("StrongEmphasis")) {
-            if (!isCursorInside) {
-              decorationsToAdd.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
-              decorationsToAdd.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
-            }
-            decorationsToAdd.push({
-              from: node.from + 2,
-              to: node.to - 2,
-              spec: Decoration.mark({ class: "cm-strong-emphasis" }),
-            });
+          // Don't hide markers if the cursor is inside the parent block (e.g., inside the whole **bold text**)
+          const isCursorInside = selectionFrom >= parent.from && selectionTo <= parent.to;
+          if (isCursorInside) {
+            return;
           }
 
-          // Italic: *text* or _text_
-          if (node.name.includes("Emphasis")) {
-            if (!isCursorInside) {
-              decorationsToAdd.push({ from: node.from, to: node.from + 1, spec: Decoration.replace({}) });
-              decorationsToAdd.push({ from: node.to - 1, to: node.to, spec: Decoration.replace({}) });
+          // Find the marker nodes and hide them
+          if (node.name.endsWith("Mark")) {
+            if (parent.name === "StrongEmphasis" || parent.name === "Emphasis" || parent.name === "Strikethrough") {
+              builder.add(node.from, node.to, Decoration.replace({}));
             }
-            decorationsToAdd.push({
-              from: node.from + 1,
-              to: node.to - 1,
-              spec: Decoration.mark({ class: "cm-emphasis" }),
-            });
-          }
-
-          // Strikethrough: ~~text~~
-          if (node.name.includes("Strikethrough")) {
-            if (!isCursorInside) {
-              decorationsToAdd.push({ from: node.from, to: node.from + 2, spec: Decoration.replace({}) });
-              decorationsToAdd.push({ from: node.to - 2, to: node.to, spec: Decoration.replace({}) });
-            }
-            decorationsToAdd.push({
-              from: node.from + 2,
-              to: node.to - 2,
-              spec: Decoration.mark({ class: "cm-strikethrough" }),
-            });
           }
         },
       });
-
-      // Sort decorations by their 'from' position before adding to the builder
-      decorationsToAdd.sort((a, b) => a.from - b.from);
-
-      const builder = new RangeSetBuilder<Decoration>();
-      for (const { from, to, spec } of decorationsToAdd) {
-        builder.add(from, to, spec);
-      }
 
       return builder.finish();
     }
@@ -83,4 +50,4 @@ const hideAndStylePlugin = ViewPlugin.fromClass(
 
 type DecorationSet = ReturnType<RangeSetBuilder<Decoration>["finish"]>;
 
-export const livePreviewPlugin = [hideAndStylePlugin];
+export const livePreviewPlugin = [hideMarkersPlugin];
