@@ -67,10 +67,6 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       tippyOptions={{
         duration: 100,
         placement: 'top-start',
-        // This is the fix: Use a 'fixed' positioning strategy for the toolbar.
-        // This helps nested floating elements (like the dropdown menu)
-        // calculate their position correctly, preventing them from
-        // appearing at the top-left of the page.
         popperOptions: {
           strategy: 'fixed',
         },
@@ -84,7 +80,7 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent sideOffset={5}>
+        <DropdownMenuContent sideOffset={5} sticky="always">
           {textStyleOptions.map((style) => (
             <DropdownMenuItem
               key={style.name}
