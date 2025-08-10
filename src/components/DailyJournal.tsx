@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import LiveMarkdownEditor from "./LiveMarkdownEditor";
+import CodeMirrorEditor from "./CodeMirrorEditor";
 import { format, isSameDay, parseISO } from "date-fns";
 import DateTimeDisplay from "./DateTimeDisplay";
 import { Calendar } from "@/components/ui/calendar";
@@ -689,7 +689,7 @@ export default function DailyJournal() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button onClick={handleImportClick} disabled={isImporting || isExporting} variant="outline" size="icon" className="h-8 w-8">
+                        <Button onClick={handleImportClick} disabled={isImporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
                           <Upload className="h-4 w-4" />
                           <span className="sr-only">Import Data</span>
                         </Button>
@@ -731,8 +731,7 @@ export default function DailyJournal() {
               <section className="flex flex-col px-4 min-h-screen">
                 <div className="flex-1 flex flex-col pt-8 pb-16">
                   {currentDaySheet ? (
-                    <LiveMarkdownEditor
-                      sheetId={currentDaySheet.id}
+                    <CodeMirrorEditor
                       initialContent={currentDaySheet.content}
                       onContentChange={handleContentSave}
                       onFocusChange={setIsEditorFocused}

@@ -1,15 +1,11 @@
 {
-  "name": "juday",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "tauri": "tauri"
-  },
   "dependencies": {
+    "@codemirror/commands": "^6.6.0",
+    "@codemirror/lang-markdown": "^6.2.5",
+    "@codemirror/language": "^6.10.2",
+    "@codemirror/language-data": "^6.5.1",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.28.1",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -39,12 +35,6 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/ssr": "^0.6.1",
     "@tailwindcss/typography": "^0.5.16",
-    "@tiptap/extension-link": "^2.4.0",
-    "@tiptap/extension-placeholder": "^2.4.0",
-    "@tiptap/extension-task-item": "^2.4.0",
-    "@tiptap/extension-task-list": "^2.4.0",
-    "@tiptap/react": "^2.4.0",
-    "@tiptap/starter-kit": "^2.4.0",
     "@types/katex": "^0.16.7",
     "ai": "^3.0.0",
     "class-variance-authority": "^0.7.1",
@@ -74,7 +64,6 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "tiptap-markdown": "^0.8.10",
     "vaul": "^1.1.2",
     "zod": "^3.25.28"
   },
