@@ -47,6 +47,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import ChatPalette from "./ChatPalette";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SheetItem {
   id: string;
@@ -727,66 +729,139 @@ export default function DailyJournal() {
 
         <main>
           {user ? (
-            <div className="w-full max-w-4xl mx-auto">
-              <section className="flex flex-col px-4 min-h-screen">
-                <div className="flex-1 flex flex-col pt-8 pb-16">
-                  {currentDaySheet ? (
-                    <CodeMirrorEditor
-                      initialContent={currentDaySheet.content}
-                      onContentChange={handleContentSave}
-                      onFocusChange={setIsEditorFocused}
-                    />
-                  ) : (
-                    <div className="h-full flex-1 flex items-center justify-center">
-                      <p className="text-muted-foreground text-center">
-                        No sheet available for this date. You can create one by typing if it's today or a future date.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <section className="px-4 pb-16">
-                {loadedHistoricalSheets.length > 0 && (
-                  <div className={cn(
-                    "w-full space-y-8 transition-opacity duration-300",
-                    isFocusModeActive && "opacity-5 pointer-events-none"
-                  )}>
-                    {loadedHistoricalSheets.map((sheet) => (
-                      <HistoricalSheetItem key={sheet.id} sheet={sheet} />
-                    ))}
-                  </div>
-                )}
-
-                {hasMoreSheets && user && (
-                  <div ref={ref} className={cn(
-                    "flex justify-center py-8 transition-opacity duration-300",
-                    isFocusModeActive && "opacity-5 pointer-events-none"
-                  )}>
-                    {loading ? (
-                      <p className="text-muted-foreground">Loading more sheets...</p>
+            isMobile ? (
+              <div className="w-full max-w-4xl mx-auto px-4">
+                <section className="flex flex-col min-h-screen">
+                  <div className="flex-1 flex flex-col pt-8 pb-16">
+                    {currentDaySheet ? (
+                      <CodeMirrorEditor
+                        initialContent={currentDaySheet.content}
+                        onContentChange={handleContentSave}
+                        onFocusChange={setIsEditorFocused}
+                      />
                     ) : (
-                      <Button
-                        onClick={() => {
-                          if (earliestLoadedDate) {
-                            fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
-                          }
-                        }}
-                        variant="outline"
-                      >
-                        Load More
-                      </Button>
+                      <div className="h-full flex-1 flex items-center justify-center">
+                        <p className="text-muted-foreground text-center">
+                          No sheet available for this date. You can create one by typing if it's today or a future date.
+                        </p>
+                      </div>
                     )}
                   </div>
-                )}
-                {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
-                  <p className={cn(
-                    "text-center text-muted-foreground py-8 transition-opacity duration-300",
-                    isFocusModeActive && "opacity-5 pointer-events-none"
-                  )}>No more historical sheets.</p>
-                )}
-              </section>
-            </div>
+                </section>
+
+                <section className="pb-16">
+                  {loadedHistoricalSheets.length > 0 && (
+                    <div className={cn(
+                      "w-full space-y-8 transition-opacity duration-300",
+                      isFocusModeActive && "opacity-5 pointer-events-none"
+                    )}>
+                      {loadedHistoricalSheets.map((sheet) => (
+                        <HistoricalSheetItem key={sheet.id} sheet={sheet} />
+                      ))}
+                    </div>
+                  )}
+
+                  {hasMoreSheets && user && (
+                    <div ref={ref} className={cn(
+                      "flex justify-center py-8 transition-opacity duration-300",
+                      isFocusModeActive && "opacity-5 pointer-events-none"
+                    )}>
+                      {loading ? (
+                        <p className="text-muted-foreground">Loading more sheets...</p>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            if (earliestLoadedDate) {
+                              fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
+                            }
+                          }}
+                          variant="outline"
+                        >
+                          Load More
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
+                    <p className={cn(
+                      "text-center text-muted-foreground py-8 transition-opacity duration-300",
+                      isFocusModeActive && "opacity-5 pointer-events-none"
+                    )}>No more historical sheets.</p>
+                  )}
+                </section>
+              </div>
+            ) : (
+              <ResizablePanelGroup direction="horizontal" className="w-full">
+                <ResizablePanel defaultSize={15} minSize={10} />
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={70} minSize={30}>
+                  <ScrollArea className="h-screen">
+                    <div className="px-6">
+                      <section className="flex flex-col min-h-screen">
+                        <div className="flex-1 flex flex-col pt-8 pb-16">
+                          {currentDaySheet ? (
+                            <CodeMirrorEditor
+                              initialContent={currentDaySheet.content}
+                              onContentChange={handleContentSave}
+                              onFocusChange={setIsEditorFocused}
+                            />
+                          ) : (
+                            <div className="h-full flex-1 flex items-center justify-center">
+                              <p className="text-muted-foreground text-center">
+                                No sheet available for this date. You can create one by typing if it's today or a future date.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </section>
+
+                      <section className="pb-16">
+                        {loadedHistoricalSheets.length > 0 && (
+                          <div className={cn(
+                            "w-full space-y-8 transition-opacity duration-300",
+                            isFocusModeActive && "opacity-5 pointer-events-none"
+                          )}>
+                            {loadedHistoricalSheets.map((sheet) => (
+                              <HistoricalSheetItem key={sheet.id} sheet={sheet} />
+                            ))}
+                          </div>
+                        )}
+
+                        {hasMoreSheets && user && (
+                          <div ref={ref} className={cn(
+                            "flex justify-center py-8 transition-opacity duration-300",
+                            isFocusModeActive && "opacity-5 pointer-events-none"
+                          )}>
+                            {loading ? (
+                              <p className="text-muted-foreground">Loading more sheets...</p>
+                            ) : (
+                              <Button
+                                onClick={() => {
+                                  if (earliestLoadedDate) {
+                                    fetchHistoricalSheets(user.id, earliestLoadedDate, SHEETS_PER_LOAD);
+                                  }
+                                }}
+                                variant="outline"
+                              >
+                                Load More
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                        {!hasMoreSheets && loadedHistoricalSheets.length > 0 && (
+                          <p className={cn(
+                            "text-center text-muted-foreground py-8 transition-opacity duration-300",
+                            isFocusModeActive && "opacity-5 pointer-events-none"
+                          )}>No more historical sheets.</p>
+                        )}
+                      </section>
+                    </div>
+                  </ScrollArea>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={15} minSize={10} />
+              </ResizablePanelGroup>
+            )
           ) : (
             <div className="w-full max-w-5xl mx-auto px-4 py-8 md:py-16">
               <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
