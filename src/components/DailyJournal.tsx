@@ -530,7 +530,7 @@ export default function DailyJournal() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col">
+      <div className="flex flex-col h-screen">
         <header className={cn(
           "sticky top-0 z-10 flex items-start justify-between px-4 py-4 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
           isFocusModeActive && "opacity-5 pointer-events-none"
@@ -727,7 +727,7 @@ export default function DailyJournal() {
           </div>
         </header>
 
-        <main>
+        <main className="flex-1 overflow-y-auto">
           {user ? (
             isMobile ? (
               <div className="w-full max-w-4xl mx-auto px-4">
@@ -791,11 +791,11 @@ export default function DailyJournal() {
                 </section>
               </div>
             ) : (
-              <ResizablePanelGroup direction="horizontal" className="w-full">
+              <ResizablePanelGroup direction="horizontal" className="h-full w-full">
                 <ResizablePanel defaultSize={15} minSize={10} />
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={70} minSize={30}>
-                  <ScrollArea className="h-screen">
+                  <ScrollArea className="h-full">
                     <div className="px-6">
                       <section className="flex flex-col min-h-screen">
                         <div className="flex-1 flex flex-col pt-8 pb-16">
