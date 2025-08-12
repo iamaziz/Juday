@@ -173,6 +173,10 @@
   @apply my-1;
 }
 
+.prose li > p:first-of-type {
+  @apply my-0 inline;
+}
+
 .prose a {
   @apply text-primary hover:underline;
 }
