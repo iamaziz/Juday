@@ -738,6 +738,7 @@ export default function DailyJournal() {
                         initialContent={currentDaySheet.content}
                         onContentChange={handleContentSave}
                         onFocusChange={setIsEditorFocused}
+                        placeholder="Start writing your daily journal, tasks, and notes here..."
                       />
                     ) : (
                       <div className="h-full flex-1 flex items-center justify-center">
@@ -804,6 +805,7 @@ export default function DailyJournal() {
                               initialContent={currentDaySheet.content}
                               onContentChange={handleContentSave}
                               onFocusChange={setIsEditorFocused}
+                              placeholder="Start writing your daily journal, tasks, and notes here..."
                             />
                           ) : (
                             <div className="h-full flex-1 flex items-center justify-center">

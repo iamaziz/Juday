@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { EditorState } from '@codemirror/state';
-import { EditorView, keymap, ViewUpdate } from '@codemirror/view';
+import { EditorView, keymap, ViewUpdate, placeholder } from '@codemirror/view';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
@@ -16,6 +16,7 @@ interface CodeMirrorEditorProps {
   initialContent: string;
   onContentChange: (content: string) => void;
   onFocusChange?: (isFocused: boolean) => void;
+  placeholder?: string;
 }
 
 const obsidianHighlightStyle = HighlightStyle.define([
@@ -104,12 +105,18 @@ const getEditorFrameTheme = () => EditorView.theme({
     textDecoration: 'line-through',
     color: 'hsl(var(--muted-foreground))',
   },
+  // Placeholder style
+  '.cm-placeholder': {
+    color: 'hsl(var(--muted-foreground))',
+    fontStyle: 'italic',
+  }
 });
 
 export default function CodeMirrorEditor({
   initialContent,
   onContentChange,
   onFocusChange,
+  placeholder: placeholderText,
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -136,6 +143,7 @@ export default function CodeMirrorEditor({
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         syntaxHighlighting(obsidianHighlightStyle),
         lineStylingPlugin,
+        placeholder(placeholderText || ''),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.focusChanged) {
             onFocusChange?.(update.view.hasFocus);
@@ -168,7 +176,7 @@ export default function CodeMirrorEditor({
       viewRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [theme]);
+  }, [theme, placeholderText]);
 
   useEffect(() => {
     if (viewRef.current && initialContent !== viewRef.current.state.doc.toString()) {
