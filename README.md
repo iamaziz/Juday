@@ -37,6 +37,23 @@ Juday is a minimalist digital journal designed to maximize your [***signal-to-no
 
 ### For Local Development
 
+First, create a `.env.local` file in the root of the project and add your environment variables. You can get your Supabase keys from your project's dashboard.
+
+```bash
+# .env.local
+
+# for cloud-db
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+
+# for local LLM (optional)
+OLLAMA_API_BASE_URL="http://localhost:11434/v1"
+OLLAMA_MODEL="qwen3:4b"
+OLLAMA_API_KEY="any"
+```
+
+Then, install the dependencies and run the development server:
+
 ```bash
 npm install
 npm run dev
