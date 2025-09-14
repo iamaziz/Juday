@@ -49,6 +49,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import ChatPalette from "./ChatPalette";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ChatView from "./ChatView";
 
 interface SheetItem {
   id: string;
@@ -304,9 +305,9 @@ export default function DailyJournal() {
     }
   }, [inView, hasMoreSheets, loading, user, earliestLoadedDate, fetchHistoricalSheets]);
 
-  // Effect for keyboard shortcut to open chat
+  // Effect for keyboard shortcut to open chat (mobile only)
   useEffect(() => {
-    if (IS_TAURI_BUILD) return; // Disable chat shortcut in desktop app
+    if (IS_TAURI_BUILD || !isMobile) return;
 
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -317,7 +318,7 @@ export default function DailyJournal() {
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [isMobile]);
 
 
   const handleSignIn = async () => {
@@ -669,17 +670,6 @@ export default function DailyJournal() {
                   <>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button onClick={() => setIsChatOpen(true)} variant="outline" size="icon" className="h-8 w-8">
-                          <Sparkles className="h-4 w-4" />
-                          <span className="sr-only">Chat with Journal</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Chat with Journal (Cmd+K)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
                         <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
                           <Download className="h-4 w-4" />
                           <span className="sr-only">Download All Data</span>
@@ -793,11 +783,9 @@ export default function DailyJournal() {
               </div>
             ) : (
               <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-                <ResizablePanel defaultSize={15} minSize={10} />
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={70} minSize={30}>
+                <ResizablePanel defaultSize={65} minSize={40}>
                   <ScrollArea className="h-full">
-                    <div className="px-6">
+                    <div className="max-w-4xl mx-auto px-6">
                       <section className="flex flex-col min-h-screen">
                         <div className="flex-1 flex flex-col pt-8 pb-16">
                           {currentDaySheet ? (
@@ -861,7 +849,17 @@ export default function DailyJournal() {
                   </ScrollArea>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={15} minSize={10} />
+                <ResizablePanel defaultSize={35} minSize={25} className="h-full">
+                  {!IS_TAURI_BUILD ? (
+                    <div className="h-full border-l">
+                      <ChatView />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-center text-muted-foreground p-4 border-l">
+                      Chat is not available in the desktop app.
+                    </div>
+                  )}
+                </ResizablePanel>
               </ResizablePanelGroup>
             )
           ) : (
@@ -929,7 +927,7 @@ export default function DailyJournal() {
           )}
         </main>
       </div>
-      {user && !IS_TAURI_BUILD && <ChatPalette isOpen={isChatOpen} onOpenChange={setIsChatOpen} />}
+      {user && isMobile && !IS_TAURI_BUILD && <ChatPalette isOpen={isChatOpen} onOpenChange={setIsChatOpen} />}
       <AlertDialog open={!!conflict}>
         <AlertDialogContent>
           <AlertDialogHeader>
