@@ -85,6 +85,7 @@ export default function DailyJournal() {
   const isMobile = useIsMobile();
   const { setTheme } = useTheme();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatPanelVisible, setIsChatPanelVisible] = useState(true);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -305,14 +306,18 @@ export default function DailyJournal() {
     }
   }, [inView, hasMoreSheets, loading, user, earliestLoadedDate, fetchHistoricalSheets]);
 
-  // Effect for keyboard shortcut to open chat (mobile only)
+  // Effect for keyboard shortcut to open chat
   useEffect(() => {
-    if (IS_TAURI_BUILD || !isMobile) return;
+    if (IS_TAURI_BUILD) return;
 
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setIsChatOpen((open) => !open);
+        if (isMobile) {
+          setIsChatOpen((open) => !open);
+        } else {
+          setIsChatPanelVisible((visible) => !visible);
+        }
       }
     };
 
@@ -593,7 +598,7 @@ export default function DailyJournal() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => setIsChatOpen(true)}>
                         <Sparkles className="mr-2 h-4 w-4" />
-                        <span>Chat with Journal</span>
+                        <span>Chat (Cmd+K)</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleImportClick} disabled={isImporting || isExporting}>
                         <Upload className="mr-2 h-4 w-4" />
@@ -668,6 +673,17 @@ export default function DailyJournal() {
                 </Tooltip>
                 {user && !IS_TAURI_BUILD && (
                   <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={() => setIsChatPanelVisible(v => !v)} variant="outline" size="icon" className="h-8 w-8">
+                          <Sparkles className="h-4 w-4" />
+                          <span className="sr-only">Toggle Chat Panel</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Toggle Chat Panel (Cmd+K)</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button onClick={handleExport} disabled={isExporting || isImporting} variant="outline" size="icon" className="h-8 w-8">
@@ -783,7 +799,7 @@ export default function DailyJournal() {
               </div>
             ) : (
               <ResizablePanelGroup direction="horizontal" className="h-full w-full">
-                <ResizablePanel defaultSize={65} minSize={40}>
+                <ResizablePanel defaultSize={isChatPanelVisible ? 65 : 100} minSize={40}>
                   <ScrollArea className="h-full">
                     <div className="max-w-4xl mx-auto px-6">
                       <section className="flex flex-col min-h-screen">
@@ -848,18 +864,16 @@ export default function DailyJournal() {
                     </div>
                   </ScrollArea>
                 </ResizablePanel>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={35} minSize={25} className="h-full">
-                  {!IS_TAURI_BUILD ? (
-                    <div className="h-full border-l">
-                      <ChatView />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-center text-muted-foreground p-4 border-l">
-                      Chat is not available in the desktop app.
-                    </div>
-                  )}
-                </ResizablePanel>
+                {isChatPanelVisible && !IS_TAURI_BUILD && (
+                  <>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={35} minSize={25} className="h-full">
+                      <div className="h-full border-l">
+                        <ChatView />
+                      </div>
+                    </ResizablePanel>
+                  </>
+                )}
               </ResizablePanelGroup>
             )
           ) : (
