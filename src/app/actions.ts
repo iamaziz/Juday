@@ -242,3 +242,61 @@ export async function clearAllChatHistory(): Promise<{ success?: boolean; error?
 
   return { success: true };
 }
+
+export async function saveChatMessage(
+  userMessage: string,
+  assistantMessage: string,
+  sessionId: string | null
+): Promise<{ sessionId: string; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { sessionId: '', error: 'Unauthorized' };
+  }
+
+  let currentSessionId = sessionId;
+
+  try {
+    // If it's a new conversation, create a session first
+    if (!currentSessionId) {
+      const { data: newSession, error: newSessionError } = await supabase
+        .from('chat_sessions')
+        .insert({
+          user_id: user.id,
+          title: userMessage.substring(0, 100), // Use the user's message as the title
+        })
+        .select('id')
+        .single();
+
+      if (newSessionError) throw newSessionError;
+      currentSessionId = newSession.id;
+    }
+
+    // Now, insert both messages into the chat_messages table
+    const messagesToInsert = [
+      {
+        session_id: currentSessionId,
+        role: 'user',
+        content: userMessage,
+      },
+      {
+        session_id: currentSessionId,
+        role: 'assistant',
+        content: assistantMessage,
+      },
+    ];
+
+    const { error: insertError } = await supabase
+      .from('chat_messages')
+      .insert(messagesToInsert);
+
+    if (insertError) throw insertError;
+
+    return { sessionId: currentSessionId! };
+
+  } catch (error: any) {
+    console.error('Error saving chat message:', error);
+    return { sessionId: '', error: error.message };
+  }
+}

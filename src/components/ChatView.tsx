@@ -5,7 +5,7 @@ import { useChat, type Message } from "ai/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, User, Loader2, Sparkles, History } from "lucide-react";
+import { Bot, Send, User, Loader2, Sparkles, History, Save, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -17,6 +17,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { saveChatMessage } from "@/app/actions";
+import { toast } from "sonner";
 
 const groupMessages = (messages: Message[]) => {
   const pairs: { user: Message; assistant: Message | null }[] = [];
@@ -41,18 +43,10 @@ const formatAssistantContent = (content: string) => {
 export default function ChatView() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'chat' | 'history'>('chat');
+  const [savedMessageIds, setSavedMessageIds] = useState<Set<string>>(new Set());
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, error, setMessages } = useChat({
     api: "/api/chat",
-    body: {
-      sessionId,
-    },
-    onResponse: (response) => {
-      const newSessionId = response.headers.get('x-juday-session-id');
-      if (newSessionId) {
-        setSessionId(newSessionId);
-      }
-    },
     onError: (err: Error) => {
       // Error is handled in the UI below
     },
@@ -74,10 +68,29 @@ export default function ChatView() {
   const handleNewChat = () => {
     setMessages([]);
     setSessionId(null);
+    setSavedMessageIds(new Set());
     setViewMode('chat');
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
+  };
+
+  const handleSaveMessage = async (userMessage: Message, assistantMessage: Message) => {
+    const toastId = toast.loading("Saving conversation...");
+    
+    const result = await saveChatMessage(
+      userMessage.content,
+      assistantMessage.content,
+      sessionId
+    );
+
+    if (result.error) {
+      toast.error(`Failed to save: ${result.error}`, { id: toastId });
+    } else {
+      toast.success("Conversation saved!", { id: toastId });
+      setSessionId(result.sessionId);
+      setSavedMessageIds(prev => new Set(prev).add(userMessage.id));
+    }
   };
 
   const messagePairs = groupMessages(messages);
@@ -130,35 +143,63 @@ export default function ChatView() {
                   <p className="text-xs mt-2">e.g., "What did I work on last week?" or "Summarize my entry from May 15th."</p>
                 </div>
               )}
-              {reversedPairs.map((pair, index) => (
-                <div key={pair.user.id} className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 flex-shrink-0 text-muted-foreground mt-1" />
-                    <p className="font-semibold text-lg leading-tight">{pair.user.content}</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Bot className="h-5 w-5 flex-shrink-0 text-primary mt-1" />
-                    <div className="w-full">
-                      {pair.assistant ? (
-                        <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm, remarkMath]}
-                            rehypePlugins={[rehypeKatex]}
-                          >
-                            {formatAssistantContent(pair.assistant.content)}
-                          </ReactMarkdown>
-                        </div>
-                      ) : isLoading ? (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Thinking...</span>
-                        </div>
-                      ) : null}
+              {reversedPairs.map((pair, index) => {
+                const isSaved = savedMessageIds.has(pair.user.id);
+                return (
+                  <div key={pair.user.id} className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <User className="h-5 w-5 flex-shrink-0 text-muted-foreground mt-1" />
+                      <p className="font-semibold text-lg leading-tight">{pair.user.content}</p>
                     </div>
+                    <div className="flex items-start gap-3 group">
+                      <Bot className="h-5 w-5 flex-shrink-0 text-primary mt-1" />
+                      <div className="w-full">
+                        {pair.assistant ? (
+                          <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm, remarkMath]}
+                              rehypePlugins={[rehypeKatex]}
+                            >
+                              {formatAssistantContent(pair.assistant.content)}
+                            </ReactMarkdown>
+                          </div>
+                        ) : isLoading && index === 0 ? (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Thinking...</span>
+                          </div>
+                        ) : null}
+                      </div>
+                      {pair.assistant && !isLoading && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleSaveMessage(pair.user, pair.assistant!)}
+                                disabled={isSaved}
+                              >
+                                {isSaved ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Save className="h-4 w-4" />
+                                )}
+                                <span className="sr-only">{isSaved ? 'Saved' : 'Save'}</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{isSaved ? 'Saved' : 'Save to history'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                    {index < reversedPairs.length - 1 && <hr className="border-border/50" />}
                   </div>
-                  {index < reversedPairs.length - 1 && <hr className="border-border/50" />}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
         </>

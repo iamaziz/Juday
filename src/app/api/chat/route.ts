@@ -14,7 +14,7 @@ export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
-    const { messages, sessionId: currentSessionId } = await req.json();
+    const { messages } = await req.json();
     const supabase = await createClient();
 
     // 1. Authenticate the user
@@ -61,10 +61,6 @@ ${journalContext}
 Now, please answer the user's question based on their journal.`
     };
 
-    // This will hold the session ID for the current conversation.
-    let sessionId = currentSessionId;
-    const lastUserMessage = messages[messages.length - 1];
-
     // 5. Call the local LLM
     const response = await ollama.chat.completions.create({
       model: process.env.OLLAMA_MODEL || 'qwen3:latest',
@@ -72,62 +68,10 @@ Now, please answer the user's question based on their journal.`
       messages: [systemPrompt, ...messages],
     });
 
-    // 6. Stream the response back, using callbacks to save to DB
-    const stream = OpenAIStream(response as any, {
-      onStart: async () => {
-        if (!sessionId && lastUserMessage.role === 'user') {
-          const { data: newSession, error: newSessionError } = await supabase
-            .from('chat_sessions')
-            .insert({
-              user_id: user.id,
-              title: lastUserMessage.content.substring(0, 100),
-            })
-            .select('id')
-            .single();
-
-          if (newSessionError) {
-            console.error('Error creating new chat session:', newSessionError);
-            return;
-          }
-          sessionId = newSession.id;
-        }
-
-        if (sessionId && lastUserMessage.role === 'user') {
-          const { error: userMessageError } = await supabase
-            .from('chat_messages')
-            .insert({
-              session_id: sessionId,
-              role: 'user',
-              content: lastUserMessage.content,
-            });
-          if (userMessageError) {
-            console.error('Error saving user message:', userMessageError);
-          }
-        }
-      },
-      onCompletion: async (completion: string) => {
-        if (sessionId) {
-          const { error: assistantMessageError } = await supabase
-            .from('chat_messages')
-            .insert({
-              session_id: sessionId,
-              role: 'assistant',
-              content: completion,
-            });
-          if (assistantMessageError) {
-            console.error('Error saving assistant message:', assistantMessageError);
-          }
-        }
-      },
-    });
+    // 6. Stream the response back, without saving to the database
+    const stream = OpenAIStream(response as any);
     
-    const headers = new Headers();
-    // If we created a new session, send its ID back to the client.
-    if (!currentSessionId && sessionId) {
-      headers.set('x-juday-session-id', sessionId);
-    }
-
-    return new StreamingTextResponse(stream, { headers });
+    return new StreamingTextResponse(stream);
 
   } catch (e: any) {
     console.error('Error in chat API:', e);
